@@ -225,7 +225,7 @@
         DLog(@"payload: %@", payload);
         DLog(@"tag:     %@", tag);
 
-        NSDictionary *payloadDict = [payload objectFromJSONString];
+        NSDictionary *payloadDict = [payload cdvjk_objectFromJSONString];
 
         if(!payloadDict)
         {

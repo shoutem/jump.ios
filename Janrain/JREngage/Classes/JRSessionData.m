@@ -785,7 +785,7 @@ static JRSessionData* singleton = nil;
 {
     ALog (@"Configuration information needs to be updated.");
 
-    NSDictionary *jsonDict = (NSDictionary*)[dataStr objectFromJSONString];
+    NSDictionary *jsonDict = (NSDictionary*)[dataStr cdvjk_objectFromJSONString];
 
     /* Double-check the return value */
     if (!jsonDict)
@@ -1183,7 +1183,7 @@ static JRSessionData* singleton = nil;
     }
 
 
-    NSString *activityContent = [[activityDictionary JSONString] stringByAddingUrlPercentEscapes];
+    NSString *activityContent = [[activityDictionary cdvjk_JSONString] stringByAddingUrlPercentEscapes];
     NSString *deviceToken     = user.deviceToken;
 
     DLog(@"activity json string \n %@" , activityContent);
@@ -1265,7 +1265,7 @@ static JRSessionData* singleton = nil;
 {
     ALog (@"Activity sharing response: %@", response);
 
-    NSDictionary *responseDict = [response objectFromJSONString];
+    NSDictionary *responseDict = [response cdvjk_objectFromJSONString];
 
     if (!responseDict)
     {
@@ -1480,7 +1480,7 @@ static JRSessionData* singleton = nil;
     if (theActivity.url)        [urls setObject:[NSArray arrayWithObject:theActivity.url] forKey:@"activity"];
 
     NSString *urlString = [NSString stringWithFormat:@"%@/openid/get_urls?urls=%@&app_name=%@&device=%@",
-                           baseUrl, [[urls JSONString]/*JSONRepresentation]*/ stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+                           baseUrl, [[urls cdvjk_JSONString]/*JSONRepresentation]*/ stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
                             [self appNameAndVersion], device];
 
     DLog (@"Getting shortened URLs: %@", urlString);
@@ -1497,7 +1497,7 @@ static JRSessionData* singleton = nil;
 {
     DLog ("Shortened Urls: %@", urls);
 
-    NSDictionary *dict = [urls objectFromJSONString];
+    NSDictionary *dict = [urls cdvjk_objectFromJSONString];
 
     if (!dict)
         goto CALL_DELEGATE_SELECTOR;
