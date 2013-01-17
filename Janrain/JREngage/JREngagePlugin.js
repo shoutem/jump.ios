@@ -85,6 +85,11 @@ JREngagePlugin.prototype.showAuthentication = function(success, fail)
     PgCdv.exec(success, fail, 'JREngagePlugin', 'showAuthenticationDialog', []);
 };
 
+JREngagePlugin.prototype.showAuthenticationForProvider = function(provider, success, fail)
+{
+    PgCdv.exec(success, fail, 'JREngagePlugin', 'showAuthenticationDialogForProvider', [provider]);
+};
+
 JREngagePlugin.prototype.showSharing = function(activity, success, fail)
 {
     PgCdv.exec(success, fail, 'JREngagePlugin', 'showSharingDialog', [activity]);

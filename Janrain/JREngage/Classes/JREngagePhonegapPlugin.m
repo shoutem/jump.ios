@@ -212,6 +212,25 @@
     [JREngage showAuthenticationDialog];
 }
 
+- (void)showAuthenticationDialogForProvider:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+{
+    DLog(@"");
+    
+    self.callbackID = [arguments pop];
+    NSString *provider;
+    if ([arguments count])
+        provider = [arguments objectAtIndex:0];
+    else
+    {
+        [self finishWithFailureMessage:[self stringFromCode:JRMissingAppIdError
+                                                 andMessage:@"Missing provider in call to initialize"]];
+        
+        return;
+    }
+    
+    [JREngage showAuthenticationDialogForProvider:provider];
+}
+
 - (void)showSharingDialog:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
     DLog(@"");
