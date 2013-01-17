@@ -28,18 +28,18 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#import <Foundation/Foundation.h>
-
 /**
  * @internal
  * Intended for internal use. Please see JRCapture.h
  */
 @interface JRCaptureData : NSObject
+@property(nonatomic, retain) id bpChannelUrl;
+
 + (void)setAccessToken:(NSString *)newAccessToken forUser:(NSString *)userId;
 + (void)setCreationToken:(NSString *)newCreationToken;
 + (NSString *)accessTokenForUser:(NSString *)userId;
-+ (NSString *)accessToken;//ForUser:(NSString *)userId;
-+ (NSString *)creationToken;//ForUser:(NSString *)userId;
++ (NSString *)accessToken;
++ (NSString *)creationToken;
 + (NSURL *)captureApidBaseUrl;
 + (NSURL *)captureUIBaseUrl;
 + (NSString *)clientId;
@@ -53,4 +53,6 @@
 + (NSString *)getAccessToken;
 
 + (void)clearSignInState;
+
++ (void)setBackplaneChannelUrl:(NSString *)bpChannelUrl;
 @end

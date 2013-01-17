@@ -1049,7 +1049,7 @@ replacementString:(NSString *)string
 - (void)updateDidSucceedForObject:(JRCaptureObject *)object context:(NSObject *)context
 {
     DLog(@"");
-    [SharedData resaveCaptureUser];
+    [SharedData saveCaptureUser];
 
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Success"
                                                         message:[[object toDictionaryForEncoder:NO] JSONString]

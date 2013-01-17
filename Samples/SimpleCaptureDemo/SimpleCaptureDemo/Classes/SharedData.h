@@ -39,24 +39,32 @@
 @protocol DemoSignInDelegate <NSObject>
 @optional
 - (void)engageSignInDidSucceed;
+
 - (void)engageSignInDidFailWithError:(NSError *)error;
+
 - (void)captureSignInDidSucceed;
+
 - (void)captureSignInDidFailWithError:(NSError *)error;
 @end
 
 @interface SharedData : NSObject <JRCaptureSigninDelegate>
-@property(nonatomic, assign) BOOL engageSignInWasCanceled;
-+ (SharedData *)sharedData;
-+ (JRCaptureUser *)captureUser;
-+ (BOOL)isNew;
-+ (BOOL)isNotYetCreated;
-+ (NSString *)currentEmail;
-+ (NSString *)currentProvider;
-+ (void)startAuthenticationWithCustomInterface:(NSDictionary *)customInterface forDelegate:(id<DemoSignInDelegate>)delegate;
-+ (void)resaveCaptureUser;
-+ (void)signOutCurrentUser;
+@property(readonly) BOOL engageSignInWasCanceled;
+@property(readonly) JRCaptureUser *captureUser;
+@property(readonly) BOOL isNew;
+@property(readonly) BOOL isNotYetCreated;
+@property(readonly) NSString *currentProvider;
+@property(weak) id <DemoSignInDelegate> demoSignInDelegate;
 
-- (void)setDemoSigninDelegate:(id <DemoSignInDelegate>)demoSigninDelegate;
++ (SharedData *)sharedData;
+
+- (void)asyncFetchNewLiveFyreUserToken;
+
++ (void)startAuthenticationWithCustomInterface:(NSDictionary *)customInterface
+                                   forDelegate:(id <DemoSignInDelegate>)delegate;
+
++ (void)saveCaptureUser;
+
++ (void)signOutCurrentUser;
 
 @end
 

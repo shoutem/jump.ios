@@ -96,6 +96,8 @@ static JRCaptureData *singleton = nil;
 @synthesize accessToken;
 @synthesize creationToken;
 @synthesize uuid;
+@synthesize bpChannelUrl;
+
 
 - (JRCaptureData *)init
 {
@@ -149,10 +151,11 @@ static JRCaptureData *singleton = nil;
 {
     NSString *autoCreate = @"false"; // TODO, parameterize into JRCaptureData
     JRCaptureData *captureDataInstance = [JRCaptureData captureDataInstance];
-    return [NSString stringWithFormat:@"%@/oauth/mobile_signin?client_id=%@&redirect_uri=https://%@/cmeu"
-                                              "&auto_create=%@",
+    NSString *bpChannelParam = captureDataInstance.bpChannelUrl ?
+            [NSString stringWithFormat:@"&bp_channel=%@", captureDataInstance.bpChannelUrl] : @"";
+    return [NSString stringWithFormat:@"%@/oauth/mobile_signin?client_id=%@&redirect_uri=%@/cmeu&auto_create=%@%@",
                                       captureDataInstance.captureUIBaseUrl, captureDataInstance.clientId,
-                                      captureDataInstance.captureUIBaseUrl, autoCreate];
+                                      captureDataInstance.captureUIBaseUrl, autoCreate, bpChannelParam];
 }
 
 + (void)setCaptureApidDomain:(NSString *)newCaptureApidDomain captureUIDomain:(NSString *)newCaptureUIDomain
@@ -191,8 +194,8 @@ static JRCaptureData *singleton = nil;
                               andServiceName:[JRCaptureData serviceNameForTokenType:tokenType]
                                        error:&error];
 
-    if (error)
-        ALog (@"Error deleting device token from keychain: %@", [error localizedDescription]);
+    //if (error)
+    //    ALog (@"Error deleting device token from keychain: %@", [error localizedDescription]);
 }
 
 + (void)storeTokenInKeychain:(NSString *)token ofType:(JRTokenType)tokenType forUser:(NSString *)uuid
@@ -324,7 +327,7 @@ static JRCaptureData *singleton = nil;
     [accessToken release];
     [creationToken release];
     [uuid release];
-
+    [bpChannelUrl release];
     [super dealloc];
 }
 
@@ -338,5 +341,10 @@ static JRCaptureData *singleton = nil;
     [JRCaptureData captureDataInstance].accessToken = nil;
     [JRCaptureData captureDataInstance].creationToken = nil;
     [JRCaptureData captureDataInstance].uuid = nil;
+}
+
++ (void)setBackplaneChannelUrl:(NSString *)bpChannelUrl
+{
+    [JRCaptureData captureDataInstance].bpChannelUrl = bpChannelUrl;
 }
 @end

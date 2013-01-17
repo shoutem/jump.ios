@@ -32,26 +32,20 @@
  Date:   Wednesday, January 4th, 2012
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef DEBUG
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+#ifdef JR_ENABLE_CORDOVA_PLUGIN
 
 #import "JREngagePhonegapPlugin.h"
 #import "JREngageError.h"
 #import "JRActivityObject.h"
 #import "JRConnectionManager.h"
-
-#ifdef PHONEGAP_OR_CORDOVA
+#import "debug_log.h"
+#import "JSONKit.h"
 
 @interface JREngagePhonegapPlugin ()
-@property (nonatomic, retain) NSMutableDictionary *fullAuthenticationResponse;
-@property (nonatomic, retain) NSMutableDictionary *fullSharingResponse;
-@property (nonatomic, retain) NSMutableArray      *authenticationBlobs;
-@property (nonatomic, retain) NSMutableArray      *shareBlobs;
+@property(nonatomic, retain) NSMutableDictionary *fullAuthenticationResponse;
+@property(nonatomic, retain) NSMutableDictionary *fullSharingResponse;
+@property(nonatomic, retain) NSMutableArray *authenticationBlobs;
+@property(nonatomic, retain) NSMutableArray *shareBlobs;
 @end
 
 @implementation JREngagePhonegapPlugin
@@ -60,66 +54,62 @@
 @synthesize fullSharingResponse;
 @synthesize authenticationBlobs;
 @synthesize shareBlobs;
+@synthesize shareInProgress = _shareInProgress;
+
 
 - (id)init
 {
-    if ((self = [super init])) { }
+    if ((self = [super init]))
+    {
+
+    }
     return self;
 }
 
-- (void)print:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void)print:(CDVInvokedUrlCommand *)command
 {
-    self.callbackID = [arguments pop];
+    self.callbackID = command.callbackId;
 
-    DLog(@"print arguments: %@", callbackID);
+    DLog(@"print arguments: %@", command);
 
-    NSString     *printString  = [arguments objectAtIndex:0];
+    NSString *printString = [command argumentAtIndex:0];
 
-    PCPluginResult *pluginResult = [PCPluginResult resultWithStatus:PCCommandStatus_OK
-                                                    messageAsString:printString];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsString:printString];
 
-    // TODO: Nathan, what were you testing here?
-    // if([printString isEqualToString:@"Hello World }]%20"] == YES)
-    if([printString isEqualToString:@"Hello World"] == YES)
-    {
-        [self writeJavascript:[pluginResult toSuccessCallbackString:self.callbackID]];
-    }
-    else
-    {
-        [self writeJavascript:[pluginResult toErrorCallbackString:self.callbackID]];
-    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackID];
 }
 
-- (void)thenFinish
+- (void)resetPluginState
 {
-    weAreSharing                    = NO;
+    self.shareInProgress = NO;
     self.fullAuthenticationResponse = nil;
-    self.fullSharingResponse        = nil;
-    self.authenticationBlobs        = nil;
-    self.shareBlobs                 = nil;
+    self.fullSharingResponse = nil;
+    self.authenticationBlobs = nil;
+    self.shareBlobs = nil;
 }
 
 - (void)finishWithSuccessMessage:(NSString *)message
 {
-    PCPluginResult* pluginResult = [PCPluginResult resultWithStatus:PCCommandStatus_OK
-                                                    messageAsString:message];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsString:message];
 
-    [self writeJavascript:[pluginResult toSuccessCallbackString:self.callbackID]];
-    [self thenFinish];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackID];
+    [self resetPluginState];
 }
 
 - (void)finishWithFailureMessage:(NSString *)message
 {
-    PCPluginResult* pluginResult = [PCPluginResult resultWithStatus:PCCommandStatus_ERROR
-                                                    messageAsString:message];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                      messageAsString:message];
 
-    [self writeJavascript:[pluginResult toErrorCallbackString:self.callbackID]];
-    [self thenFinish];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackID];
+    [self resetPluginState];
 }
 
-- (NSString*)stringFromError:(NSError*)error
+- (NSString *)stringFromError:(NSError *)error
 {
-    NSMutableDictionary *errorResponse = [NSMutableDictionary dictionaryWithCapacity:2];
+    NSMutableDictionary *errorResponse = [NSMutableDictionary dictionary];
 
     [errorResponse setObject:[NSNumber numberWithInt:error.code] forKey:@"code"];
     [errorResponse setObject:error.localizedDescription forKey:@"message"];
@@ -128,9 +118,9 @@
     return [errorResponse JSONString];
 }
 
-- (NSString*)stringFromCode:(NSInteger)code andMessage:(NSString*)message
+- (NSString *)stringFromCode:(NSInteger)code andMessage:(NSString *)message
 {
-    NSMutableDictionary *errorResponse = [NSMutableDictionary dictionaryWithCapacity:2];
+    NSMutableDictionary *errorResponse = [NSMutableDictionary dictionary];
 
     [errorResponse setObject:[NSNumber numberWithInt:code] forKey:@"code"];
     [errorResponse setObject:message forKey:@"message"];
@@ -139,75 +129,54 @@
     return [errorResponse JSONString];
 }
 
-- (void)saveTheAuthenticationBlobForLater
+- (void)saveAuthenticationBlob
 {
     if (!authenticationBlobs)
-        self.authenticationBlobs = [NSMutableArray arrayWithCapacity:5];
+        self.authenticationBlobs = [NSMutableArray array];
 
     [authenticationBlobs addObject:fullAuthenticationResponse];
 
     self.fullAuthenticationResponse = nil;
 }
 
-- (void)initializeJREngage:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void)initializeJREngage:(CDVInvokedUrlCommand *)command
 {
     DLog(@"");
 
-    self.callbackID = [arguments pop];
+    self.callbackID = command.callbackId;
 
-    NSString *appId;
-    if ([arguments count])
-        appId = [arguments objectAtIndex:0];
-    else
+    NSString *appId = [command argumentAtIndex:0];
+
+    if (!appId)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRMissingAppIdError
                                                  andMessage:@"Missing appId in call to initialize"]];
-
         return;
     }
 
-    NSString *tokenUrl = nil;
-    if ([arguments count] > 1)
-        tokenUrl = [arguments objectAtIndex:1];
-
+    NSString *tokenUrl = [command argumentAtIndex:1];
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"/JREngage-Info.plist"];
     NSMutableDictionary *infoPlist =
-            [NSMutableDictionary dictionaryWithDictionary:
-                    [NSDictionary dictionaryWithContentsOfFile:path]];
+            [NSMutableDictionary dictionaryWithDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
     NSMutableString *version = [NSMutableString stringWithString:[infoPlist objectForKey:@"CFBundleShortVersionString"]];
-    //NSString *newVersion = @"";
 
-#ifdef PHONEGAP_FRAMEWORK
-    if (![version hasSuffix:@":phonegap"])
-        [version appendString:@":phonegap"];////newVersion = [NSString stringWithFormat:@"%@:%@", version, @":phonegap"];
-#else
-#ifdef CORDOVA_FRAMEWORK
     if (![version hasSuffix:@":cordova"])
-        [version appendString:@":cordova"];//newVersion = [NSString stringWithFormat:@"%@:%@", version, @"cordova"];
-#endif
-#endif
+        [version appendString:@":cordova"];
 
     [infoPlist setObject:version forKey:@"CFBundleShortVersionString"];
     [infoPlist writeToFile:path atomically:YES];
 
     [JREngage setEngageAppId:appId tokenUrl:tokenUrl andDelegate:self];
-//    if (!jrEngage)
-//    {
-//        [self finishWithFailureMessage:[self stringFromCode:JRGenericConfigurationError
-//                                                 andMessage:@"There was an error initializing JREngage: returned JREngage object was null"]];
-//
-//        return;
-//    }
 
     [self finishWithSuccessMessage:@"{'stat':'ok','message':'Initializing JREngage...'}"];
 }
 
-- (void)showAuthenticationDialog:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void)showAuthenticationDialog:(CDVInvokedUrlCommand *)command
 {
     DLog(@"");
 
-    self.callbackID = [arguments pop];
+    self.callbackID = command.callbackId;
 
     [JREngage showAuthenticationDialog];
 }
@@ -235,13 +204,11 @@
 {
     DLog(@"");
 
-    self.callbackID = [arguments pop];
-    weAreSharing    = YES;
+    self.callbackID = command.callbackId;
+    self.shareInProgress = YES;
 
-    NSString *activityString;
-    if ([arguments count])
-        activityString = [arguments objectAtIndex:0];
-    else
+    NSDictionary *activity = [command argumentAtIndex:0];
+    if (!activity)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRPublishErrorActivityNil
                                                  andMessage:@"Activity object is required and cannot be null"]];
@@ -249,16 +216,7 @@
         return;
     }
 
-    NSDictionary *activityDictionary = (NSDictionary*)[activityString objectFromJSONString];
-    if (!activityDictionary)
-    {
-        [self finishWithFailureMessage:[self stringFromCode:JRPublishErrorBadActivityJson
-                                                 andMessage:@"The activity object passed was not valid JSON"]];
-
-        return;
-    }
-
-    JRActivityObject *activityObject = [JRActivityObject activityObjectFromDictionary:activityDictionary];
+    JRActivityObject *activityObject = [JRActivityObject activityObjectFromDictionary:activity];
     if (!activityObject)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRPublishErrorBadActivityJson
@@ -287,7 +245,7 @@
 {
     DLog(@"");
 
-    if (!weAreSharing)
+    if (!self.shareInProgress)
         [self finishWithFailureMessage:[self stringFromError:error]];
 }
 
@@ -296,7 +254,7 @@
 {
     DLog(@"");
 
-    if (!weAreSharing)
+    if (!self.shareInProgress)
         [self finishWithFailureMessage:[self stringFromError:error]];
 }
 
@@ -307,11 +265,32 @@
     NSMutableDictionary *newAuthInfo = [NSMutableDictionary dictionaryWithDictionary:authInfo];
     [newAuthInfo removeObjectForKey:@"stat"];
 
-    if (!fullAuthenticationResponse)
-        self.fullAuthenticationResponse = [NSMutableDictionary dictionaryWithCapacity:5];
+    self.fullAuthenticationResponse = [NSMutableDictionary dictionary];
 
     [fullAuthenticationResponse setObject:newAuthInfo forKey:@"auth_info"];
     [fullAuthenticationResponse setObject:provider forKey:@"provider"];
+    if (![JREngage tokenUrl])
+    {
+        self.fullAuthenticationResponse = [self authinfoResponseWithStuff:fullAuthenticationResponse
+                                                                 tokenUrl:nil payloadString:nil];
+        NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
+
+        if (self.shareInProgress)
+            [self saveAuthenticationBlob];
+        else
+            [self finishWithSuccessMessage:authResponseString];
+    }
+}
+
+- (NSMutableDictionary *)authinfoResponseWithStuff:(NSMutableDictionary *)dictionary
+                                          tokenUrl:(NSString *)tokenUrl
+                                     payloadString:(NSString *)payloadString
+{
+    NSMutableDictionary *r = [NSMutableDictionary dictionaryWithDictionary:dictionary];
+    [r setObject:tokenUrl ? tokenUrl : (void *) kCFNull forKey:@"tokenUrl"];
+    [r setObject:(payloadString ? payloadString : (void *) kCFNull) forKey:@"tokenUrlPayload"];
+    [r setObject:@"ok" forKey:@"stat"];
+    return r;
 }
 
 - (void)authenticationDidReachTokenUrl:(NSString *)tokenUrl withResponse:(NSURLResponse *)response
@@ -319,19 +298,20 @@
 {
     DLog(@"");
 
-    if (!fullAuthenticationResponse) /* That's not right! */; // TODO: Will this ever happen, and if so, what should we do?
+    // TODO: Will this ever happen, and if so, what should we do?
+    if (!fullAuthenticationResponse) ALog(@"JREngage error");
 
-    NSString *payloadString = [[[NSString alloc] initWithData:tokenUrlPayload encoding:NSASCIIStringEncoding] autorelease];
+    NSString *payloadString = [[[NSString alloc] initWithData:tokenUrlPayload
+                                                     encoding:NSUTF8StringEncoding] autorelease];
 
-    [fullAuthenticationResponse setObject:tokenUrl forKey:@"tokenUrl"];
-    [fullAuthenticationResponse setObject:(payloadString ? payloadString : (void *) kCFNull)
-                                   forKey:@"tokenUrlPayload"];
-    [fullAuthenticationResponse setObject:@"ok" forKey:@"stat"];
+    self.fullAuthenticationResponse = [self authinfoResponseWithStuff:self.fullAuthenticationResponse
+                                                             tokenUrl:tokenUrl
+                                                        payloadString:payloadString];
 
-    NSString *authResponseString = [fullAuthenticationResponse JSONString];
+    NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
 
-    if (weAreSharing)
-        [self saveTheAuthenticationBlobForLater];
+    if (self.shareInProgress)
+        [self saveAuthenticationBlob];
     else
         [self finishWithSuccessMessage:authResponseString];
 }
@@ -343,13 +323,13 @@
 
     NSDictionary *shareBlob =
             [NSDictionary dictionaryWithObjectsAndKeys:
-                    provider, @"provider",
-                    @"fail", @"stat",
-                    [NSString stringWithFormat:@"%d", error.code], @"code",
-                    error.localizedDescription, @"message", nil];
+                                  provider, @"provider",
+                                  @"fail", @"stat",
+                                  [NSString stringWithFormat:@"%d", error.code], @"code",
+                                  error.localizedDescription, @"message", nil];
 
     if (!shareBlobs)
-        self.shareBlobs = [NSMutableArray arrayWithCapacity:5];
+        self.shareBlobs = [NSMutableArray array];
 
     [shareBlobs addObject:shareBlob];
 }
@@ -361,7 +341,7 @@
     NSDictionary *shareBlob = [NSDictionary dictionaryWithObjectsAndKeys:provider, @"provider", @"ok", @"stat", nil];
 
     if (!shareBlobs)
-        self.shareBlobs = [NSMutableArray arrayWithCapacity:5];
+        self.shareBlobs = [NSMutableArray array];
 
     [shareBlobs addObject:shareBlob];
 }
@@ -371,7 +351,7 @@
     DLog(@"");
 
     if (!fullSharingResponse)
-        self.fullSharingResponse = [NSMutableDictionary dictionaryWithCapacity:5];
+        self.fullSharingResponse = [NSMutableDictionary dictionary];
 
     if (authenticationBlobs)
         [fullSharingResponse setObject:authenticationBlobs forKey:@"signIns"];
@@ -403,27 +383,5 @@
     [super dealloc];
 }
 @end
+
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

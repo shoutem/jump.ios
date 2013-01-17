@@ -72,7 +72,7 @@
     [myAboutMeTextView setInputAccessoryView:myKeyboardToolbar];
     [myEmailTextField setInputAccessoryView:myKeyboardToolbar];
 
-    self.captureUser = [SharedData captureUser];
+    self.captureUser = [SharedData sharedData].captureUser;
 
     if (captureUser.email)
         myEmailTextField.text  = captureUser.email;
@@ -155,7 +155,7 @@
     else if (myGenderIdentitySegControl.selectedSegmentIndex == 1)
         captureUser.gender = @"male";
 
-    if ([SharedData isNotYetCreated])
+    if ([SharedData sharedData].isNotYetCreated)
         [captureUser createOnCaptureForDelegate:self context:nil];
     else
         [captureUser updateOnCaptureForDelegate:self context:nil];
@@ -200,7 +200,7 @@
 
     [self.navigationController popViewControllerAnimated:YES];
 
-    [SharedData resaveCaptureUser];
+    [SharedData saveCaptureUser];
 }
 
 - (void)handleFailureWithMessage:(NSString *)message
@@ -214,7 +214,7 @@
 
 //    [self.navigationController popViewControllerAnimated:YES];
 //
-//    [SharedData resaveCaptureUser];
+//    [SharedData saveCaptureUser];
 }
 
 - (void)createDidSucceedForUser:(JRCaptureUser *)user context:(NSObject *)context

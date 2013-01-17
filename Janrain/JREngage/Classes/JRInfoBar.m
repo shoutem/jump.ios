@@ -34,22 +34,13 @@
 
 
 #import "JRInfoBar.h"
-
-#ifdef DEBUG
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-
+#import "debug_log.h"
+#import "JRUserInterfaceMaestro.h"
 
 @implementation JRInfoBar
 
 - (id)initWithFrame:(CGRect)frame andStyle:(JRInfoBarStyle)style
 {
-    DLog(@"");
-
     if ((self = [super initWithFrame:frame]))
     {
         CGFloat width = self.frame.size.width;
@@ -154,8 +145,8 @@
 
     NSString *version = [infoPlist objectForKey:@"CFBundleShortVersionString"];
 
- /* So long as I always number the versions v#.#.#, this will always trim the leading 'v', leaving just the numbers.
-    Also, if my script accidentally adds a trailing '\n', this gets trimmed too. */
+    /* So long as I always number the versions v#.#.#, this will always trim the leading 'v', leaving just the numbers.
+       Also, if my script accidentally adds a trailing '\n', this gets trimmed too. */
     version = [[version stringByTrimmingCharactersInSet:[NSCharacterSet lowercaseLetterCharacterSet]]
                         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
@@ -171,8 +162,6 @@
 
 - (void)startProgress
 {
-//    DLog(@"");
-
     [spinner startAnimating];
 
     if (hidesPoweredBy)
@@ -194,8 +183,6 @@
 
 - (void)stopProgress
 {
-//    DLog(@"");
-
     [spinner stopAnimating];
 
     [UIView beginAnimations:@"fade" context:nil];
@@ -217,8 +204,6 @@
 
 - (void)fadeIn
 {
-    DLog(@"");
-
     [UIView beginAnimations:@"fade" context:nil];
     [UIView setAnimationDuration:0.1];
     [UIView setAnimationDelay:0.0];
@@ -229,8 +214,6 @@
 
 - (void)fadeOut
 {
-    DLog(@"");
-
     [UIView beginAnimations:@"fade" context:nil];
     [UIView setAnimationDuration:0.1];
     [UIView setAnimationDelay:0.0];
@@ -241,18 +224,8 @@
     [UIView commitAnimations];
 }
 
-/*
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-}
-*/
-
-//- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation { return YES; }
-
 - (void)dealloc
 {
-    DLog(@"");
-
     [barBackground release];
     [poweredByLabel release];
     [spinner release];

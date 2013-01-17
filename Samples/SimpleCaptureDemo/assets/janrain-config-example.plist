@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>default-config</key>
+    <string>test</string>
+
+    <key>test</key>
+    <dict>
+        <!-- required: -->
+        <key>engageAppId</key>
+        <string>appcfamhnpkagijaeinl</string>
+        <key>captureApidDomain</key>
+        <string>mobile-testing.janraincapture.com</string>
+        <key>captureUIDomain</key>
+        <string>mobile-testing.janraincapture.com</string>
+        <key>captureClientId</key>
+        <string>atasaz59p8cyecmbzmcwkbthsyq3wrxh</string>
+
+        <!-- not required: -->
+        <key>bpBusUrlString</key>
+        <string></string>
+        <key>liveFyreNetwork</key>
+        <string></string>
+        <key>liveFyreSiteId</key>
+        <string></string>
+        <key>liveFyreArticleId</key>
+        <string></string>
+     </dict>
+</dict>
+</plist>

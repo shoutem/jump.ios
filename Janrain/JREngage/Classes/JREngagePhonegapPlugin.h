@@ -32,49 +32,13 @@
  Date:   Wednesday, January 4th, 2012
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef PHONEGAP_FRAMEWORK
-#define PHONEGAP_OR_CORDOVA
-
-#import <PhoneGap/PGPlugin.h>
-#import <PhoneGap/JSONKit.h>
-
-#define PCPlugin PGPlugin
-#define PCPluginResult PluginResult
-#define PCCommandStatus_OK PGCommandStatus_OK
-#define PCCommandStatus_ERROR PGCommandStatus_ERROR
-
-#else
-#ifdef CORDOVA_FRAMEWORK
-#define PHONEGAP_OR_CORDOVA
-
-#import <Cordova/CDVPlugin.h>
-#import <Cordova/JSONKit.h>
-
-#define PCPlugin CDVPlugin
-#define PCPluginResult CDVPluginResult
-#define PCCommandStatus_OK CDVCommandStatus_OK
-#define PCCommandStatus_ERROR CDVCommandStatus_ERROR
-
-#endif
-#endif
-
-#ifdef PHONEGAP_OR_CORDOVA
-#import <Foundation/Foundation.h>
+#ifdef JR_ENABLE_CORDOVA_PLUGIN
 #import "JREngage.h"
+#import "Cordova/CDV.h"
 
-@interface JREngagePhonegapPlugin : PCPlugin <JREngageSigninDelegate, JREngageSharingDelegate>
-{
-    NSString *callbackID;
-
-    NSMutableDictionary *fullAuthenticationResponse;
-    NSMutableDictionary *fullSharingResponse;
-    NSMutableArray      *authenticationBlobs;
-    NSMutableArray      *shareBlobs;
-
-    BOOL weAreSharing;
-}
-
-@property (nonatomic, copy) NSString* callbackID;
+@interface JREngagePhonegapPlugin : CDVPlugin <JREngageSigninDelegate, JREngageSharingDelegate>
+@property(nonatomic, retain) id callbackID;
+@property(nonatomic) BOOL shareInProgress;
 @end
 
 #endif

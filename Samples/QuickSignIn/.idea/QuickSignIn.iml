@@ -43,6 +43,12 @@
     <content url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JREngagePhonegapPlugin.m">
       <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JREngagePhonegapPlugin.m" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRFBConnect.h">
+      <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRFBConnect.h" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRFBConnect.m">
+      <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRFBConnect.m" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRInfoBar.h">
       <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JREngage/Classes/JRInfoBar.h" isTestSource="false" />
     </content>

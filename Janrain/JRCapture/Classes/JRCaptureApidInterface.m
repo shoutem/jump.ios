@@ -60,11 +60,6 @@ static NSString *const cTagAction = @"action";
 @implementation JRCaptureApidInterface
 static JRCaptureApidInterface *singleton = nil;
 
-/* Here for testing against Carl's local instance */
-#ifdef TESTING_CARL_LOCAL
-static NSString *appIdArg = @"&application_id=qx3ss262yufnmpb3ck93jr3zfs"
-#endif
-
 - (JRCaptureApidInterface *)init
 {
     if ((self = [super init])) { }

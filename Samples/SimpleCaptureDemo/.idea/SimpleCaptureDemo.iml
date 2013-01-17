@@ -16,12 +16,6 @@
     <content url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureApidInterface.m">
       <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureApidInterface.m" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureBaseUser.h">
-      <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureBaseUser.h" isTestSource="false" />
-    </content>
-    <content url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureBaseUser.m">
-      <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureBaseUser.m" isTestSource="false" />
-    </content>
     <content url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureData.h">
       <sourceFolder url="file://$MODULE_DIR$/../../Janrain/JRCapture/Classes/JRCaptureData.h" isTestSource="false" />
     </content>
@@ -418,7 +412,9 @@
     <content url="file://$MODULE_DIR$/../Janrain/Security/SFHFKeychainUtils.m">
       <sourceFolder url="file://$MODULE_DIR$/../Janrain/Security/SFHFKeychainUtils.m" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/../../../facebook-ios-sdk/build/FacebookSDK.framework/Versions/A/Resources/FBUserSettingsViewResources.bundle/Contents/Resources/en.lproj/Localizable.strings">
       <sourceFolder url="file://$MODULE_DIR$/../../../facebook-ios-sdk/build/FacebookSDK.framework/Versions/A/Resources/FBUserSettingsViewResources.bundle/Contents/Resources/en.lproj/Localizable.strings" isTestSource="false" />
     </content>

@@ -39,10 +39,9 @@
 @interface RootViewController : UIViewController <DemoSignInDelegate, JRCaptureObjectDelegate>
 - (IBAction)browseButtonPressed:(id)sender;
 - (IBAction)updateButtonPressed:(id)sender;
-- (IBAction)captureWidgetButtonPressed:(id)sender;
+- (IBAction)thirdButtonPressed:(id)sender;
 - (IBAction)signInButtonPressed:(id)sender;
 - (IBAction)signOutButtonPressed:(id)sender;
-- (IBAction)shareButtonPressed:(id)sender;
 @property (weak, nonatomic) IBOutlet UIButton *shareWidgetButton;
 @property (weak) IBOutlet UILabel *currentUserLabel;
 @property (weak) IBOutlet UIImageView *currentUserProviderIcon;

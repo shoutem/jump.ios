@@ -630,6 +630,11 @@ static JREngage* singleton = nil;
     [sessionData setTokenUrl:newTokenUrl];
 }
 
++ (NSString *)tokenUrl
+{
+    return [JREngage singletonInstance].sessionData.tokenUrl;
+}
+
 + (void)updateTokenUrl:(NSString*)newTokenUrl
 {
     [[JREngage singletonInstance] updateTokenUrl:newTokenUrl];

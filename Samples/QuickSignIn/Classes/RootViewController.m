@@ -11,9 +11,6 @@
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
     return self;
 }
 
@@ -44,14 +41,21 @@
 
 - (BOOL)shouldAutorotate
 {
-    if ([jrChildNavController respondsToSelector:@selector(shouldAutorotate)])
-        return [jrChildNavController shouldAutorotate];
-    return YES;
+    BOOL b = YES;
+    if ([[self modalViewController] respondsToSelector:@selector(shouldAutorotate)])
+        b = [[self modalViewController] shouldAutorotate];
+    else if ([jrChildNavController respondsToSelector:@selector(shouldAutorotate)])
+        b = [jrChildNavController shouldAutorotate];
+    DLog(@"should: %i", b);
+    return b;
 }
+
+
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
                                 duration:(NSTimeInterval)duration
 {
+    //DLog(@"toOrientation: %i duration: %f", toInterfaceOrientation, duration);
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     [jrChildNavController willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
 }
@@ -59,12 +63,14 @@
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
                                          duration:(NSTimeInterval)duration
 {
+    //DLog(@"toOrientation: %i duration: %f", toInterfaceOrientation, duration);
     [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
     [jrChildNavController willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+    //DLog(@"fromOrientation: %i", fromInterfaceOrientation);
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
     [jrChildNavController didRotateFromInterfaceOrientation:fromInterfaceOrientation];
 }
@@ -98,6 +104,26 @@
 {
     [jrChildNavController release];
     [super dealloc];
+}
+
+@end
+
+@interface UINavigationController(IOS6Autorotation)
+@end
+
+@implementation UINavigationController(IOS6Autorotation)
+- (BOOL)shouldAutorotate
+{
+    BOOL b = [[self visibleViewController] shouldAutorotate];
+    DLog(@"should: %i with %@", b, [[self visibleViewController] description]);
+    return b;
+}
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    NSUInteger i = [[self visibleViewController] supportedInterfaceOrientations];
+    DLog(@"supported: %i", i);
+    return i;
 }
 
 @end

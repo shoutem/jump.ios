@@ -482,8 +482,6 @@ Please try again later."
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    DLog(@"");
-
     UITableViewCellProviders *cell =
         (UITableViewCellProviders*)[tableView dequeueReusableCellWithIdentifier:@"cachedCell"];
 

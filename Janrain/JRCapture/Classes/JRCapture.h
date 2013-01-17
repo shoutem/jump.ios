@@ -432,6 +432,12 @@ typedef enum
 /*@{*/
 
 /**
+ * Set the Backplane channel URL to which Capture will post identity/login messages to. For use with third party
+ * integrations
+ */
++ (void)setBackplaneChannelUrl:(NSString *)backplaneChannelUrl;
+
+/**
  * Method for configuring the library to work with your Janrain Capture and Engage applications.
  *
  * @param appId
@@ -589,6 +595,7 @@ typedef enum
                                   forDelegate:(id <JRCaptureSigninDelegate>)delegate;
 
 #ifdef JRENGAGE_SHARING_WITH_CAPTURE
++ (void)setBackplaneChannelUrl:(NSString *)string;
 /**
  * Use this function to begin social sharing. The library will pop up a modal dialog and
  * take the user through the sign-in process, if necessary, and share the given JRActivityObject.

@@ -54,6 +54,11 @@
     [JREngageWrapper configureEngageWithCaptureMobileEndpointUrlAndAppId:appId];
 }
 
++ (void)setBackplaneChannelUrl:(NSString *)backplaneChannelUrl
+{
+    [JRCaptureData setBackplaneChannelUrl:backplaneChannelUrl];
+}
+
 + (void)setEngageAppId:(NSString *)appId
      captureApidDomain:(NSString *)captureApidDomain
        captureUIDomain:(NSString *)captureUIDomain

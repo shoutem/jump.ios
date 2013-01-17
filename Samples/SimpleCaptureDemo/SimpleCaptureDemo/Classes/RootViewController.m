@@ -31,26 +31,14 @@
  Date:   ${DATE}
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
-#ifdef DEBUG
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-
+#import "debug_log.h"
 #import "RootViewController.h"
 #import "JREngage+CustomInterface.h"
 #import "CaptureProfileViewController.h"
 #import "ObjectDrillDownViewController.h"
-#import "JRCaptureApidInterface.h"
-#import "JRCaptureJsWidgetWrapper.h"
-#import "JRCaptureWebViewController.h"
-#import "JRUserInterfaceMaestro.h"
 
 @interface RootViewController ()
-- (void)adjustUiState;
+- (void)configureButtons;
 @end
 
 @implementation RootViewController
@@ -67,27 +55,20 @@
 {
     [super viewDidLoad];
 
-    if ([SharedData currentEmail])
-        currentUserLabel.text = [NSString stringWithFormat:@"Current user: %@", [SharedData currentEmail]];
-    else
-        currentUserLabel.text = @"No current user";
-
-    if ([SharedData currentProvider])
-        currentUserProviderIcon.image = [UIImage imageNamed:
-                     [NSString stringWithFormat:@"icon_%@_30x30@2x.png", [SharedData currentProvider]]];
+    [self configureUserLabelAndIcon];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    [self adjustUiState];
+    [self configureButtons];
 }
 
 - (BOOL)isUserSignedIn
 {
-    return [SharedData captureUser] != nil;
+    return [SharedData sharedData].captureUser != nil;
 }
 
-- (void)adjustUiState
+- (void)configureButtons
 {
     if ([self isUserSignedIn])
     {
@@ -99,18 +80,11 @@
         signInButton.hidden = NO;
         signOutButton.hidden = YES;
     }
-
-    //shareWidgetButton.hidden = NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
-    if ([SharedData currentEmail])
-        currentUserLabel.text = [NSString stringWithFormat:@"Current user: %@", [SharedData currentEmail]];
-
-    if ([SharedData currentProvider])
-        currentUserProviderIcon.image = [UIImage imageNamed:
-                     [NSString stringWithFormat:@"icon_%@_30x30@2x.png", [SharedData currentProvider]]];
+    [self configureUserLabelAndIcon];
 }
 
 - (void)setButtonsEnabled:(BOOL)enabled
@@ -127,7 +101,7 @@
     ObjectDrillDownViewController *drillDown =
         [[ObjectDrillDownViewController alloc] initWithNibName:@"ObjectDrillDownViewController"
                                                         bundle:[NSBundle mainBundle]
-                                                     forObject:[SharedData captureUser]
+                                                     forObject:[SharedData sharedData].captureUser
                                            captureParentObject:nil
                                                         andKey:@"CaptureUser"];
 
@@ -142,18 +116,9 @@
     [self.navigationController pushViewController:viewController animated:YES];
 }
 
-- (IBAction)captureWidgetButtonPressed:(id)sender
+- (IBAction)thirdButtonPressed:(id)sender
 {
-    DLog(@"");
-    [JRCapture startJsWidgetWithUrl:nil];
-}
-
-- (IBAction)shareButtonPressed:(id)sender
-{
-    DLog(@"");
-
-    NSString *embeddedShareUrl = @"http://nathan.janrain.com/~nathan/share_widget_webview/embedded_share.html";
-    [JRCapture startJsWidgetWithUrl:embeddedShareUrl];
+    [[SharedData sharedData] asyncFetchNewLiveFyreUserToken];
 }
 
 - (IBAction)signInButtonPressed:(id)sender
@@ -172,27 +137,38 @@
     currentUserLabel.text = @"No current user";
     currentUserProviderIcon.image = nil;
     [SharedData signOutCurrentUser];
-    [self adjustUiState];
+    [self configureButtons];
 }
 
+- (void)configureUserLabelAndIcon
+{
+    if ([SharedData sharedData].captureUser)
+        currentUserLabel.text = [NSString stringWithFormat:@"Email: %@", [SharedData sharedData].captureUser.email];
+    else
+        currentUserLabel.text = @"No current user";
+    [self configureProviderIcon];
+}
+
+- (void)configureProviderIcon
+{
+    NSString *icon = [NSString stringWithFormat:@"icon_%@_30x30@2x.png", [SharedData sharedData].currentProvider];
+    currentUserProviderIcon.image = [UIImage imageNamed:icon];
+}
+
+#pragma mark DemoSignInDelegate messages
 - (void)engageSignInDidSucceed
 {
     currentUserLabel.text = @"Signing in...";
-    currentUserProviderIcon.image = [SharedData currentProvider] ?
-            [UIImage imageNamed:[NSString stringWithFormat:@"icon_%@_30x30@2x.png", [SharedData currentProvider]]] :
-            nil;
+    [self configureProviderIcon];
 }
 
 - (void)captureSignInDidSucceed
 {
     [self setButtonsEnabled:YES];
+    [self configureButtons];
+    [self configureUserLabelAndIcon];
 
-    //[self engageSignInDidSucceed]; /* In case this method wasn't called if the user signed in directly */
-
-    if ([SharedData currentEmail])
-        currentUserLabel.text = [NSString stringWithFormat:@"Current user: %@", [SharedData currentEmail]];
-
-    if ([SharedData isNotYetCreated] || [SharedData isNew])
+    if ([SharedData sharedData].isNotYetCreated || [SharedData sharedData].isNew)
     {
         CaptureProfileViewController *viewController = [[CaptureProfileViewController alloc]
             initWithNibName:@"CaptureProfileViewController" bundle:[NSBundle mainBundle]];
@@ -236,11 +212,6 @@
 {
     [self setShareWidgetButton:nil];
     [super viewDidUnload];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 @end

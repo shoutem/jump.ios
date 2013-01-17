@@ -407,7 +407,7 @@
     [self setTableDataWithArray:replacedArray];
     [myTableView reloadData];
 
-    [SharedData resaveCaptureUser];
+    [SharedData saveCaptureUser];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

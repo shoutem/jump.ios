@@ -501,7 +501,13 @@
  *   The valid URL on your web server where the library will \e POST the authentication token
  **/
 + (void)updateTokenUrl:(NSString*)tokenUrl;
+
+/**
+ * Returns the currently configured token URL (or nil if none is configured)
+ */
++ (NSString *)tokenUrl;
 /*@}*/
+
 
 /**
  * @name Configure the User Interface
