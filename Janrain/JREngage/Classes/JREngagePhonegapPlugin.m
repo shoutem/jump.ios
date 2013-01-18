@@ -115,7 +115,7 @@
     [errorResponse setObject:error.localizedDescription forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse JSONString];
+    return [errorResponse cdvjk_JSONString];
 }
 
 - (NSString *)stringFromCode:(NSInteger)code andMessage:(NSString *)message
@@ -126,7 +126,7 @@
     [errorResponse setObject:message forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse JSONString];
+    return [errorResponse cdvjk_JSONString];
 }
 
 - (void)saveAuthenticationBlob
@@ -204,10 +204,10 @@
 {
     DLog(@"");
 
-    self.callbackID = command.callbackId;
+    self.callbackID = [arguments pop];
     self.shareInProgress = YES;
 
-    NSDictionary *activity = [command argumentAtIndex:0];
+    NSDictionary *activity = [arguments objectAtIndex:0];
     if (!activity)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRPublishErrorActivityNil
@@ -273,7 +273,7 @@
     {
         self.fullAuthenticationResponse = [self authinfoResponseWithStuff:fullAuthenticationResponse
                                                                  tokenUrl:nil payloadString:nil];
-        NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
+        NSString *authResponseString = [self.fullAuthenticationResponse cdvjk_JSONString];
 
         if (self.shareInProgress)
             [self saveAuthenticationBlob];
@@ -308,7 +308,7 @@
                                                              tokenUrl:tokenUrl
                                                         payloadString:payloadString];
 
-    NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
+    NSString *authResponseString = [self.fullAuthenticationResponse cdvjk_JSONString];
 
     if (self.shareInProgress)
         [self saveAuthenticationBlob];
@@ -359,7 +359,7 @@
     if (shareBlobs)
         [fullSharingResponse setObject:shareBlobs forKey:@"shares"];
 
-    [self finishWithSuccessMessage:[fullSharingResponse JSONString]];
+    [self finishWithSuccessMessage:[fullSharingResponse cdvjk_JSONString]];
 }
 
 - (void)sharingDidNotComplete
