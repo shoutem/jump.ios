@@ -91,8 +91,13 @@
 
 - (void)finishWithSuccessMessage:(NSString *)message
 {
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                      messageAsString:message];
+    NSDictionary *messageDictionary = [message cdvjk_objectFromJSONString];
+    CDVPluginResult *pluginResult;
+    
+    if (messageDictionary)
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:messageDictionary];
+    else
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackID];
     [self resetPluginState];
