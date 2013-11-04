@@ -39,7 +39,6 @@
 #import "JRActivityObject.h"
 #import "JRConnectionManager.h"
 #import "debug_log.h"
-#import "CDVJSON.h"
 
 @interface JREngagePhonegapPlugin ()
 @property(nonatomic, retain) NSMutableDictionary *fullAuthenticationResponse;
@@ -114,7 +113,7 @@
     [errorResponse setObject:error.localizedDescription forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse JSONString];
+    return [self JSONStringFromNSDictionary:errorResponse];
 }
 
 - (NSString *)stringFromCode:(NSInteger)code andMessage:(NSString *)message
@@ -125,7 +124,7 @@
     [errorResponse setObject:message forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse JSONString];
+    return [self JSONStringFromNSDictionary:errorResponse];
 }
 
 - (void)saveAuthenticationBlob
@@ -178,6 +177,16 @@
     self.callbackID = command.callbackId;
 
     [JREngage showAuthenticationDialog];
+}
+
+- (void)showAuthenticationDialogForProvider:(CDVInvokedUrlCommand *)command
+{
+    NSString *provider = [command argumentAtIndex:0];
+    DLog(@"Auth for provider: %@", provider);
+    
+    self.callbackID = command.callbackId;
+    
+    [JREngage showAuthenticationDialogForProvider:provider];
 }
 
 - (void)showSharingDialog:(CDVInvokedUrlCommand *)command __unused
@@ -253,7 +262,7 @@
     {
         self.fullAuthenticationResponse = [self authinfoResponseWithStuff:fullAuthenticationResponse
                                                                  tokenUrl:nil payloadString:nil];
-        NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
+        NSString *authResponseString = [self JSONStringFromNSDictionary:self.fullAuthenticationResponse];
 
         if (self.shareInProgress)
             [self saveAuthenticationBlob];
@@ -288,7 +297,7 @@
                                                              tokenUrl:tokenUrl
                                                         payloadString:payloadString];
 
-    NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
+    NSString *authResponseString = [self JSONStringFromNSDictionary:self.fullAuthenticationResponse];
 
     if (self.shareInProgress)
         [self saveAuthenticationBlob];
@@ -339,7 +348,7 @@
     if (shareBlobs)
         [fullSharingResponse setObject:shareBlobs forKey:@"shares"];
 
-    [self finishWithSuccessMessage:[fullSharingResponse JSONString]];
+    [self finishWithSuccessMessage:[self JSONStringFromNSDictionary:fullSharingResponse]];
 }
 
 - (void)sharingDidNotComplete
@@ -361,6 +370,21 @@
     [fullSharingResponse release];
     [authenticationBlobs release];
     [super dealloc];
+}
+
+- (NSString *)JSONStringFromNSDictionary:(NSDictionary *)dictionary
+{
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+    
+    if (!jsonData)
+    {
+        NSLog(@"Error: %@", [error localizedDescription]);
+        return @"";
+    }
+    
+    NSString *jsonString = [[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding] autorelease];
+    return jsonString;
 }
 @end
 
