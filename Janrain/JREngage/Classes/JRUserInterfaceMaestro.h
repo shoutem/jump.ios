@@ -42,8 +42,34 @@
 @class JRWebViewController;
 @class JRPublishActivityController;
 
-#define JANRAIN_BLUE    [UIColor colorWithRed:0.102 green:0.33 blue:0.48 alpha:1.0]
-#define JANRAIN_BLUE_20 [UIColor colorWithRed:0.102 green:0.33 blue:0.48 alpha:0.2]
+#define MODAL_SIZE_FRAME (CGRectMake(0, 0, 320, 548))
+#define JANRAIN_BLUE    ([UIColor colorWithRed:0.102 green:0.33 blue:0.48 alpha:1.0])
+#define JANRAIN_BLUE_20 ([UIColor colorWithRed:0.102 green:0.33 blue:0.48 alpha:0.2])
+#define IS_IPAD ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad))
+#define IS_IPHONE (!IS_IPAD)
+//#define IOS6_OR_ABOVE ([[[UIDevice currentDevice] systemVersion] compare:@"6.0" options:NSNumericSearch] >= NSOrderedSame)
+#define IOS5_OR_ABOVE ([[[UIDevice currentDevice] systemVersion] compare:@"5.0" options:NSNumericSearch] >= NSOrderedSame)
+//#define IOS4_OR_ABOVE ([[[UIDevice currentDevice] systemVersion] compare:@"4.0" options:NSNumericSearch] >= NSOrderedSame)
+//#define IS_PORTRAIT (UIDeviceOrientationIsPortrait([UIDevice currentDevice].orientation))
+//#define IS_LANDSCAPE (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation))
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_6_0
+    typedef NSLineBreakMode JRLineBreakMode;
+
+#  define JR_TEXT_ALIGN_CENTER (NSTextAlignmentCenter)
+#  define JR_TEXT_ALIGN_LEFT (NSTextAlignmentLeft)
+#  define JR_LINE_BREAK_MODE_TAIL_TRUNCATION (NSLineBreakByTruncatingTail)
+#  define JR_LINE_BREAK_MODE_WORD_WRAP (NSLineBreakByWordWrapping)
+#else
+    typedef UILineBreakMode JRLineBreakMode;
+
+#  define JR_TEXT_ALIGN_CENTER (UITextAlignmentCenter)
+#  define JR_TEXT_ALIGN_LEFT (UITextAlignmentLeft)
+#  define JR_LINE_BREAK_MODE_TAIL_TRUNCATION (UILineBreakModeTailTruncation)
+#  define JR_LINE_BREAK_MODE_WORD_WRAP (UILineBreakModeWordWrap)
+#endif
+
+
 typedef enum
 {
     PadPopoverModeNone,
@@ -55,78 +81,43 @@ typedef enum
 @protocol JRExternalDialogControllerDelegate <NSObject>
 @optional
 - (void)authenticationDidComplete;
-- (void)authenticationDidCancel;
-- (void)authenticationDidFail;
 - (void)showLoading;
 - (void)hideLoading;
 @end
 
 @interface JRUserInterfaceMaestro : NSObject <UIPopoverControllerDelegate>
-{
-    // This is an invisible container VC used to present the modal and popover dialogs
-    JRModalViewController *jrModalViewController;
-    JRSessionData   *sessionData;
-    NSMutableArray  *delegates;
 
-    PadPopoverMode padPopoverMode;
-    // Pushing JUMP dialog VCs onto the host application's UINavigationController
-    BOOL usingAppNav;
-    // Presenting custom UINavigationController and pushing JUMP dialog VCs onto it
-    BOOL usingCustomNav;
++ (JRUserInterfaceMaestro *)jrUserInterfaceMaestroWithSessionData:(JRSessionData *)newSessionData;
++ (JRUserInterfaceMaestro *)sharedMaestro;
 
-    // The provider to direct-auth on
-    NSString *directProvider;
-
-    // An app supplied UINavigationController to present, and then push dialogs onto, passed via custom interface dict
-    UINavigationController  *customModalNavigationController;
-    // The host app's UINavigationController, optionally passed via custom interface dict
-    UINavigationController  *applicationNavigationController;
-    UINavigationController  *savedNavigationController;
-    UIViewController        *viewControllerToPopTo;
-
-    // The JUMP VCs
-    JRProvidersController       *myProvidersController;
-    JRUserLandingController     *myUserLandingController;
-    JRWebViewController         *myWebViewController;
-    JRPublishActivityController *myPublishActivityController;
-
-    NSDictionary        *customInterface;
-    NSDictionary        *janrainInterfaceDefaults;
-    NSMutableDictionary *customInterfaceDefaults;
-}
-
-+ (JRUserInterfaceMaestro*)jrUserInterfaceMaestroWithSessionData:(JRSessionData*)newSessionData;
-+ (JRUserInterfaceMaestro*)sharedMaestro;
-
-//- (void)useApplicationNavigationController:(UINavigationController*)navigationController;
 - (void)loadModalNavigationControllerWithViewController:(UIViewController *)rootViewController;
 - (void)loadApplicationNavigationControllerWithViewController:(UIViewController *)rootViewController;
-- (void)showAuthenticationDialogWithCustomInterface:(NSDictionary*)customizations;
-- (void)showPublishingDialogForActivityWithCustomInterface:(NSDictionary*)customizations;
+- (void)showAuthenticationDialogWithCustomInterface:(NSDictionary *)customizations;
+- (void)showPublishingDialogForActivityWithCustomInterface:(NSDictionary *)customizations;
 - (void)unloadUserInterfaceWithTransitionStyle:(UIModalTransitionStyle)style;
 
 - (void)authenticationRestarted;
 - (void)authenticationCompleted;
 - (void)authenticationFailed;
 - (void)authenticationCanceled;
-- (void)publishingRestarted;
 - (void)publishingCompleted;
 - (void)publishingCanceled;
-- (void)publishingFailed;
 
-// Question to self: Do I want to make customInterfaceDefaults nonatomic?
-@property (copy)     NSMutableDictionary         *customInterfaceDefaults;
+- (void)startWebAuthWithCustomInterface:(NSDictionary *)customInterfaceOverrides provider:(NSString *)provider;
 
+- (void)pushWebViewFromViewController:(UIViewController *)viewController;
 
-@property (readonly) JRProvidersController       *myProvidersController;
-@property (readonly) JRUserLandingController     *myUserLandingController;
-@property (readonly) JRWebViewController         *myWebViewController;
-@property (readonly) JRPublishActivityController *myPublishActivityController;
-@property (copy)     NSString                    *directProvider;
+@property(copy) NSMutableDictionary *customInterfaceDefaults;
+@property(readonly) JRProvidersController *myProvidersController;
+@property(readonly) JRUserLandingController *myUserLandingController;
+@property(readonly) JRWebViewController *myWebViewController;
+@property(readonly) JRPublishActivityController *myPublishActivityController;
+@property(copy) NSString *directProviderName;
 
 - (void)buildCustomInterface:(NSDictionary *)customizations;
 
 - (void)setUpDialogPresentation;
 
 
+- (BOOL)canRotate;
 @end

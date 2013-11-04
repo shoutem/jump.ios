@@ -541,6 +541,7 @@
 {
     NSString *_aboutMe;
     NSArray *_accounts;
+    JRStringArray *_activities;
     NSArray *_addresses;
     JRDate *_anniversary;
     NSString *_birthday;
@@ -560,7 +561,7 @@
     JRStringArray *_heroes;
     NSString *_humor;
     NSArray *_ims;
-    NSString *_interestedInMeeting;
+    JRStringArray *_interestedInMeeting;
     JRStringArray *_interests;
     JRStringArray *_jobInterests;
     JRStringArray *_languages;
@@ -624,6 +625,17 @@
 {
     [_accounts autorelease];
     _accounts = [newAccounts copy];
+}
+
+- (JRStringArray *)activities
+{
+    return _activities;
+}
+
+- (void)setActivities:(JRStringArray *)newActivities
+{
+    [_activities autorelease];
+    _activities = [newActivities copy];
 }
 
 - (NSArray *)addresses
@@ -861,15 +873,13 @@
     _ims = [newIms copy];
 }
 
-- (NSString *)interestedInMeeting
+- (JRStringArray *)interestedInMeeting
 {
     return _interestedInMeeting;
 }
 
-- (void)setInterestedInMeeting:(NSString *)newInterestedInMeeting
+- (void)setInterestedInMeeting:(JRStringArray *)newInterestedInMeeting
 {
-    [self.dirtyPropertySet addObject:@"interestedInMeeting"];
-
     [_interestedInMeeting autorelease];
     _interestedInMeeting = [newInterestedInMeeting copy];
 }
@@ -1362,6 +1372,8 @@
                    forKey:@"aboutMe"];
     [dictionary setObject:(self.accounts ? [self.accounts arrayOfAccountsDictionariesFromAccountsElementsForEncoder:forEncoder] : [NSNull null])
                    forKey:@"accounts"];
+    [dictionary setObject:(self.activities ? self.activities : [NSNull null])
+                   forKey:@"activities"];
     [dictionary setObject:(self.addresses ? [self.addresses arrayOfAddressesDictionariesFromAddressesElementsForEncoder:forEncoder] : [NSNull null])
                    forKey:@"addresses"];
     [dictionary setObject:(self.anniversary ? [self.anniversary stringFromISO8601Date] : [NSNull null])
@@ -1521,6 +1533,10 @@
         [dictionary objectForKey:@"accounts"] != [NSNull null] ? 
         [(NSArray*)[dictionary objectForKey:@"accounts"] arrayOfAccountsElementsFromAccountsDictionariesWithPath:profile.captureObjectPath fromDecoder:fromDecoder] : nil;
 
+    profile.activities =
+        [dictionary objectForKey:@"activities"] != [NSNull null] ? 
+        [(NSArray*)[dictionary objectForKey:@"activities"] arrayOfStringsFromStringPluralDictionariesWithType:@"activity"] : nil;
+
     profile.addresses =
         [dictionary objectForKey:@"addresses"] != [NSNull null] ? 
         [(NSArray*)[dictionary objectForKey:@"addresses"] arrayOfAddressesElementsFromAddressesDictionariesWithPath:profile.captureObjectPath fromDecoder:fromDecoder] : nil;
@@ -1599,7 +1615,7 @@
 
     profile.interestedInMeeting =
         [dictionary objectForKey:@"interestedInMeeting"] != [NSNull null] ? 
-        [dictionary objectForKey:@"interestedInMeeting"] : nil;
+        [(NSArray*)[dictionary objectForKey:@"interestedInMeeting"] arrayOfStringsFromStringPluralDictionariesWithType:@"interest"] : nil;
 
     profile.interests =
         [dictionary objectForKey:@"interests"] != [NSNull null] ? 
@@ -1783,6 +1799,10 @@
         [dictionary objectForKey:@"accounts"] != [NSNull null] ? 
         [(NSArray*)[dictionary objectForKey:@"accounts"] arrayOfAccountsElementsFromAccountsDictionariesWithPath:self.captureObjectPath fromDecoder:NO] : nil;
 
+    self.activities =
+        [dictionary objectForKey:@"activities"] != [NSNull null] ? 
+        [(NSArray*)[dictionary objectForKey:@"activities"] arrayOfStringsFromStringPluralDictionariesWithType:@"activity"] : nil;
+
     self.addresses =
         [dictionary objectForKey:@"addresses"] != [NSNull null] ? 
         [(NSArray*)[dictionary objectForKey:@"addresses"] arrayOfAddressesElementsFromAddressesDictionariesWithPath:self.captureObjectPath fromDecoder:NO] : nil;
@@ -1867,7 +1887,7 @@
 
     self.interestedInMeeting =
         [dictionary objectForKey:@"interestedInMeeting"] != [NSNull null] ? 
-        [dictionary objectForKey:@"interestedInMeeting"] : nil;
+        [(NSArray*)[dictionary objectForKey:@"interestedInMeeting"] arrayOfStringsFromStringPluralDictionariesWithType:@"interest"] : nil;
 
     self.interests =
         [dictionary objectForKey:@"interests"] != [NSNull null] ? 
@@ -2029,7 +2049,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"aboutMe", @"anniversary", @"birthday", @"bodyType", @"currentLocation", @"displayName", @"drinker", @"ethnicity", @"fashion", @"gender", @"happiestWhen", @"humor", @"interestedInMeeting", @"livingArrangement", @"name", @"nickname", @"note", @"politicalViews", @"preferredUsername", @"profileSong", @"profileUrl", @"profileVideo", @"published", @"relationshipStatus", @"religion", @"romance", @"scaredOf", @"sexualOrientation", @"smoker", @"status", @"updated", @"utcOffset", nil];
+    return [NSSet setWithObjects:@"aboutMe", @"anniversary", @"birthday", @"bodyType", @"currentLocation", @"displayName", @"drinker", @"ethnicity", @"fashion", @"gender", @"happiestWhen", @"humor", @"livingArrangement", @"name", @"nickname", @"note", @"politicalViews", @"preferredUsername", @"profileSong", @"profileUrl", @"profileVideo", @"published", @"relationshipStatus", @"religion", @"romance", @"scaredOf", @"sexualOrientation", @"smoker", @"status", @"updated", @"utcOffset", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -2132,9 +2152,6 @@
     if ([self.dirtyPropertySet containsObject:@"humor"])
         [dictionary setObject:(self.humor ? self.humor : [NSNull null]) forKey:@"humor"];
 
-    if ([self.dirtyPropertySet containsObject:@"interestedInMeeting"])
-        [dictionary setObject:(self.interestedInMeeting ? self.interestedInMeeting : [NSNull null]) forKey:@"interestedInMeeting"];
-
     if ([self.dirtyPropertySet containsObject:@"livingArrangement"])
         [dictionary setObject:(self.livingArrangement ? self.livingArrangement : [NSNull null]) forKey:@"livingArrangement"];
 
@@ -2219,6 +2236,11 @@
                           [NSArray array])
                    forKey:@"accounts"];
 
+    [dictionary setObject:(self.activities ?
+                          self.activities :
+                          [NSArray array])
+                   forKey:@"activities"];
+
     [dictionary setObject:(self.addresses ?
                           [self.addresses arrayOfAddressesReplaceDictionariesFromAddressesElements] :
                           [NSArray array])
@@ -2277,7 +2299,11 @@
                           [self.ims arrayOfImsReplaceDictionariesFromImsElements] :
                           [NSArray array])
                    forKey:@"ims"];
-    [dictionary setObject:(self.interestedInMeeting ? self.interestedInMeeting : [NSNull null]) forKey:@"interestedInMeeting"];
+
+    [dictionary setObject:(self.interestedInMeeting ?
+                          self.interestedInMeeting :
+                          [NSArray array])
+                   forKey:@"interestedInMeeting"];
 
     [dictionary setObject:(self.interests ?
                           self.interests :
@@ -2407,6 +2433,12 @@
                        withType:@"" forDelegate:delegate withContext:context];
 }
 
+- (void)replaceActivitiesArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context
+{
+    [self replaceArrayOnCapture:self.activities named:@"activities" isArrayOfStrings:YES
+                       withType:@"activity" forDelegate:delegate withContext:context];
+}
+
 - (void)replaceAddressesArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context
 {
     [self replaceArrayOnCapture:self.addresses named:@"addresses" isArrayOfStrings:NO
@@ -2453,6 +2485,12 @@
 {
     [self replaceArrayOnCapture:self.ims named:@"ims" isArrayOfStrings:NO
                        withType:@"" forDelegate:delegate withContext:context];
+}
+
+- (void)replaceInterestedInMeetingArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context
+{
+    [self replaceArrayOnCapture:self.interestedInMeeting named:@"interestedInMeeting" isArrayOfStrings:YES
+                       withType:@"interest" forDelegate:delegate withContext:context];
 }
 
 - (void)replaceInterestsArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context
@@ -2597,6 +2635,11 @@
     else if (!otherProfile.accounts && ![self.accounts count]) /* Keep going... */;
     else if (![self.accounts isEqualToAccountsArray:otherProfile.accounts]) return NO;
 
+    if (!self.activities && !otherProfile.activities) /* Keep going... */;
+    else if (!self.activities && ![otherProfile.activities count]) /* Keep going... */;
+    else if (!otherProfile.activities && ![self.activities count]) /* Keep going... */;
+    else if (![self.activities isEqualToArray:otherProfile.activities]) return NO;
+
     if (!self.addresses && !otherProfile.addresses) /* Keep going... */;
     else if (!self.addresses && ![otherProfile.addresses count]) /* Keep going... */;
     else if (!otherProfile.addresses && ![self.addresses count]) /* Keep going... */;
@@ -2684,8 +2727,9 @@
     else if (![self.ims isEqualToImsArray:otherProfile.ims]) return NO;
 
     if (!self.interestedInMeeting && !otherProfile.interestedInMeeting) /* Keep going... */;
-    else if ((self.interestedInMeeting == nil) ^ (otherProfile.interestedInMeeting == nil)) return NO; // xor
-    else if (![self.interestedInMeeting isEqualToString:otherProfile.interestedInMeeting]) return NO;
+    else if (!self.interestedInMeeting && ![otherProfile.interestedInMeeting count]) /* Keep going... */;
+    else if (!otherProfile.interestedInMeeting && ![self.interestedInMeeting count]) /* Keep going... */;
+    else if (![self.interestedInMeeting isEqualToArray:otherProfile.interestedInMeeting]) return NO;
 
     if (!self.interests && !otherProfile.interests) /* Keep going... */;
     else if (!self.interests && ![otherProfile.interests count]) /* Keep going... */;
@@ -2869,6 +2913,7 @@
 
     [dictionary setObject:@"NSString" forKey:@"aboutMe"];
     [dictionary setObject:@"NSArray" forKey:@"accounts"];
+    [dictionary setObject:@"JRStringArray" forKey:@"activities"];
     [dictionary setObject:@"NSArray" forKey:@"addresses"];
     [dictionary setObject:@"JRDate" forKey:@"anniversary"];
     [dictionary setObject:@"NSString" forKey:@"birthday"];
@@ -2888,7 +2933,7 @@
     [dictionary setObject:@"JRStringArray" forKey:@"heroes"];
     [dictionary setObject:@"NSString" forKey:@"humor"];
     [dictionary setObject:@"NSArray" forKey:@"ims"];
-    [dictionary setObject:@"NSString" forKey:@"interestedInMeeting"];
+    [dictionary setObject:@"JRStringArray" forKey:@"interestedInMeeting"];
     [dictionary setObject:@"JRStringArray" forKey:@"interests"];
     [dictionary setObject:@"JRStringArray" forKey:@"jobInterests"];
     [dictionary setObject:@"JRStringArray" forKey:@"languages"];
@@ -2935,6 +2980,7 @@
 {
     [_aboutMe release];
     [_accounts release];
+    [_activities release];
     [_addresses release];
     [_anniversary release];
     [_birthday release];

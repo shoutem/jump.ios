@@ -46,24 +46,10 @@
 
 @implementation JRStatusesElement
 {
-    JRObjectId *_statusesElementId;
     NSString *_status;
     JRDateTime *_statusCreated;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)statusesElementId
-{
-    return _statusesElementId;
-}
-
-- (void)setStatusesElementId:(JRObjectId *)newStatusesElementId
-{
-    [self.dirtyPropertySet addObject:@"statusesElementId"];
-
-    [_statusesElementId autorelease];
-    _statusesElementId = [newStatusesElementId copy];
-}
 
 - (NSString *)status
 {
@@ -114,8 +100,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.statusesElementId ? [NSNumber numberWithInteger:[self.statusesElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.status ? self.status : [NSNull null])
                    forKey:@"status"];
     [dictionary setObject:(self.statusCreated ? [self.statusCreated stringFromISO8601DateTime] : [NSNull null])
@@ -155,10 +139,6 @@
         statusesElement.canBeUpdatedOnCapture = YES;
     }
 
-    statusesElement.statusesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     statusesElement.status =
         [dictionary objectForKey:@"status"] != [NSNull null] ? 
         [dictionary objectForKey:@"status"] : nil;
@@ -189,10 +169,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"statuses", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.statusesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.status =
         [dictionary objectForKey:@"status"] != [NSNull null] ? 
         [dictionary objectForKey:@"status"] : nil;
@@ -206,7 +182,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"statusesElementId", @"status", @"statusCreated", nil];
+    return [NSSet setWithObjects:@"status", @"statusCreated", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -290,7 +266,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"statusesElementId"];
     [dictionary setObject:@"NSString" forKey:@"status"];
     [dictionary setObject:@"JRDateTime" forKey:@"statusCreated"];
 
@@ -299,7 +274,6 @@
 
 - (void)dealloc
 {
-    [_statusesElementId release];
     [_status release];
     [_statusCreated release];
 

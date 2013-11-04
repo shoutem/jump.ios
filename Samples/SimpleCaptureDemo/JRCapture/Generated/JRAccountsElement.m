@@ -46,26 +46,12 @@
 
 @implementation JRAccountsElement
 {
-    JRObjectId *_accountsElementId;
     NSString *_domain;
     JRBoolean *_primary;
     NSString *_userid;
     NSString *_username;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)accountsElementId
-{
-    return _accountsElementId;
-}
-
-- (void)setAccountsElementId:(JRObjectId *)newAccountsElementId
-{
-    [self.dirtyPropertySet addObject:@"accountsElementId"];
-
-    [_accountsElementId autorelease];
-    _accountsElementId = [newAccountsElementId copy];
-}
 
 - (NSString *)domain
 {
@@ -155,8 +141,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.accountsElementId ? [NSNumber numberWithInteger:[self.accountsElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.domain ? self.domain : [NSNull null])
                    forKey:@"domain"];
     [dictionary setObject:(self.primary ? [NSNumber numberWithBool:[self.primary boolValue]] : [NSNull null])
@@ -200,10 +184,6 @@
         accountsElement.canBeUpdatedOnCapture = YES;
     }
 
-    accountsElement.accountsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     accountsElement.domain =
         [dictionary objectForKey:@"domain"] != [NSNull null] ? 
         [dictionary objectForKey:@"domain"] : nil;
@@ -242,10 +222,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"accounts", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.accountsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.domain =
         [dictionary objectForKey:@"domain"] != [NSNull null] ? 
         [dictionary objectForKey:@"domain"] : nil;
@@ -267,7 +243,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"accountsElementId", @"domain", @"primary", @"userid", @"username", nil];
+    return [NSSet setWithObjects:@"domain", @"primary", @"userid", @"username", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -367,7 +343,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"accountsElementId"];
     [dictionary setObject:@"NSString" forKey:@"domain"];
     [dictionary setObject:@"JRBoolean" forKey:@"primary"];
     [dictionary setObject:@"NSString" forKey:@"userid"];
@@ -378,7 +353,6 @@
 
 - (void)dealloc
 {
-    [_accountsElementId release];
     [_domain release];
     [_primary release];
     [_userid release];

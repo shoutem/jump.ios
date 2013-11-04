@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="2843" systemVersion="11G63" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="9RN-Pn-CPc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="4504" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" variant="6xAndEarlier" propertyAccessControl="none" initialViewController="9RN-Pn-CPc">
     <dependencies>
-        <deployment defaultVersion="1536" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="1929"/>
+        <deployment defaultVersion="1280" identifier="iOS"/>
+        <development version="4600" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3734.1"/>
     </dependencies>
     <scenes>
         <!--Root View Controller-->
@@ -13,12 +14,12 @@
                         <rect key="frame" x="0.0" y="64" width="320" height="416"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="background.png" id="jE3-dT-vuu">
+                            <imageView autoresizesSubviews="NO" userInteractionEnabled="NO" contentMode="scaleToFill" image="background.png" id="jE3-dT-vuu">
                                 <rect key="frame" x="-10" y="0.0" width="330" height="416"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Sdc-xo-ZC1">
-                                <rect key="frame" x="20" y="64" width="280" height="37"/>
+                                <rect key="frame" x="20" y="64" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Browse">
@@ -26,21 +27,21 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="browseButtonPressed:" destination="2" eventType="touchUpInside" id="0c4-dy-IVB"/>
                                 </connections>
                             </button>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="No current user" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="10" id="Hq8-yJ-Rmg">
-                                <rect key="frame" x="20" y="16" width="242" height="30"/>
+                                <rect key="frame" x="20" y="16" width="242" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                 <color key="textColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="gAk-C3-t5t">
-                                <rect key="frame" x="20" y="359" width="280" height="37"/>
+                                <rect key="frame" x="20" y="353" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Sign In">
@@ -48,14 +49,14 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="signInButtonPressed:" destination="2" eventType="touchUpInside" id="k8r-X0-qFv"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="GHJ-Vx-tee">
-                                <rect key="frame" x="20" y="359" width="280" height="37"/>
+                                <rect key="frame" x="20" y="353" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Sign Out">
@@ -63,14 +64,14 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="signOutButtonPressed:" destination="2" eventType="touchUpInside" id="j4D-oh-DQW"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="3Ab-Cb-7AE">
-                                <rect key="frame" x="20" y="109" width="280" height="37"/>
+                                <rect key="frame" x="20" y="115" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Update">
@@ -78,59 +79,123 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="updateButtonPressed:" destination="2" eventType="touchUpInside" id="0Gk-aQ-4fZ"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="9l8-Zj-RBh">
-                                <rect key="frame" x="20" y="150" width="280" height="44"/>
+                                <rect key="frame" x="20" y="166" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                                <state key="normal" title="Test LiveFyre User Token Retrieval">
+                                <state key="normal">
                                     <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="thirdButtonPressed:" destination="2" eventType="touchUpInside" id="dad-f8-qmC"/>
+                                    <action selector="refreshButtonPressed:" destination="2" eventType="touchUpInside" id="dad-f8-qmC"/>
                                 </connections>
                             </button>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Lxu-X3-tcS">
-                                <rect key="frame" x="20" y="199" width="280" height="37"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Lxu-X3-tcS">
+                                <rect key="frame" x="20" y="217" width="280" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                                <state key="normal" title="Web Share Widget">
-                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Sharing Dialog">
+                                    <color key="titleColor" red="0.0" green="0.35294118523597717" blue="0.458823561668396" alpha="1" colorSpace="deviceRGB"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="shareButtonPressed:" destination="2" eventType="touchUpInside" id="XAe-wx-ONM"/>
+                                    <action selector="shareButtonPressed:" destination="2" eventType="touchUpInside" id="ejI-zV-Rut"/>
                                 </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="PZq-1X-zH2">
                                 <rect key="frame" x="270" y="16" width="30" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="11P-Kw-deQ">
+                                <rect key="frame" x="20" y="302" width="280" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Direct Traditional Sign-In">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="tradAuthButtonPressed:" destination="2" eventType="touchUpInside" id="h8B-BN-B7L"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Ghj-Zz-nLl">
+                                <rect key="frame" x="20" y="167" width="280" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Forgot Password">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="forgotPasswordButtonPressed:" destination="2" eventType="touchUpInside" id="UcZ-rZ-nLa"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="FmY-Nl-bUq">
+                                <rect key="frame" x="20" y="251" width="280" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Direct Facebook Sign-In">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="facebookAuthButtonPressed:" destination="2" eventType="touchUpInside" id="XLo-Yd-MxK"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="UYF-zS-03v">
+                                <rect key="frame" x="20" y="268" width="280" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Refetch Record">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="refetchButtonPressed:" destination="2" eventType="touchUpInside" id="g6G-Ta-tdo"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.027450980619999999" green="0.27843138579999999" blue="0.39215686919999998" alpha="1" colorSpace="calibratedRGB"/>
                     </view>
                     <navigationItem key="navigationItem" id="Yue-dQ-Nym"/>
                     <connections>
                         <outlet property="browseButton" destination="Sdc-xo-ZC1" id="3Sx-RY-vcP"/>
-                        <outlet property="captureWidgetButton" destination="9l8-Zj-RBh" id="FEg-vq-zM3"/>
                         <outlet property="currentUserLabel" destination="Hq8-yJ-Rmg" id="hGr-bA-Zvn"/>
                         <outlet property="currentUserProviderIcon" destination="PZq-1X-zH2" id="vdO-gn-iv0"/>
-                        <outlet property="shareWidgetButton" destination="Lxu-X3-tcS" id="6WO-eE-sYh"/>
+                        <outlet property="directFacebookAuthButton" destination="FmY-Nl-bUq" id="ocV-yU-NfD"/>
+                        <outlet property="forgotPasswordButton" destination="Ghj-Zz-nLl" id="Uf9-AE-5eo"/>
+                        <outlet property="formButton" destination="3Ab-Cb-7AE" id="ewh-dj-wSs"/>
+                        <outlet property="refetchButton" destination="UYF-zS-03v" id="Ry9-EY-EKB"/>
+                        <outlet property="refreshButton" destination="9l8-Zj-RBh" id="FEg-vq-zM3"/>
+                        <outlet property="shareButton" destination="Lxu-X3-tcS" id="6WO-eE-sYh"/>
                         <outlet property="signInButton" destination="gAk-C3-t5t" id="xiB-Pk-aug"/>
                         <outlet property="signOutButton" destination="GHJ-Vx-tee" id="irK-fI-240"/>
-                        <outlet property="updateButton" destination="3Ab-Cb-7AE" id="ewh-dj-wSs"/>
+                        <outlet property="tradAuthButton" destination="11P-Kw-deQ" id="pWo-8s-cyK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
@@ -141,8 +206,8 @@
         <scene sceneID="5UQ-nJ-b2j">
             <objects>
                 <navigationController definesPresentationContext="YES" id="9RN-Pn-CPc" sceneMemberID="viewController">
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" barStyle="blackOpaque" prompted="NO"/>
-                    <navigationBar key="navigationBar" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" barStyle="blackOpaque" id="Ofo-7j-i0T">
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <navigationBar key="navigationBar" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translucent="NO" id="Ofo-7j-i0T">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

@@ -28,31 +28,53 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+@class JRCaptureConfig;
+
 /**
  * @internal
- * Intended for internal use. Please see JRCapture.h
  */
 @interface JRCaptureData : NSObject
-@property(nonatomic, retain) id bpChannelUrl;
+@property(nonatomic, retain) NSString *bpChannelUrl;
+@property(nonatomic, readonly, retain) NSString *captureBaseUrl;
+@property(nonatomic, readonly, retain) NSString *captureRedirectUri;
+@property(nonatomic, readonly, retain) NSString *passwordRecoverUri;
+@property(nonatomic, readonly, retain) NSString *clientId;
+@property(nonatomic, readonly, retain) NSString *accessToken;
+@property(nonatomic, readonly, retain) NSString *refreshSecret;
+@property(nonatomic, readonly, retain) NSString *captureLocale;
+@property(nonatomic, readonly, retain) NSString *captureTraditionalSignInFormName;
+@property(nonatomic, readonly, retain) NSString *captureFlowName;
+@property(nonatomic, readonly, retain) NSString *captureTraditionalRegistrationFormName;
+@property(nonatomic, readonly, retain) NSString *captureSocialRegistrationFormName;
+@property(nonatomic, readonly, retain) NSString *captureFlowVersion;
+@property(nonatomic, readonly, retain) NSString *captureAppId;
+@property(nonatomic, readonly, retain) NSDictionary *captureFlow;
+@property(nonatomic, readonly, retain) NSString *captureForgottenPasswordFormName;
+@property(nonatomic) BOOL flowUsesTestingCdn;
 
-+ (void)setAccessToken:(NSString *)newAccessToken forUser:(NSString *)userId;
-+ (void)setCreationToken:(NSString *)newCreationToken;
-+ (NSString *)accessTokenForUser:(NSString *)userId;
-+ (NSString *)accessToken;
-+ (NSString *)creationToken;
-+ (NSURL *)captureApidBaseUrl;
-+ (NSURL *)captureUIBaseUrl;
-+ (NSString *)clientId;
-+ (NSString *)entityTypeName;
-+ (void)setCaptureApidDomain:(NSString *)newCaptureApidDomain
-             captureUIDomain:(NSString *)newCaptureUIDomain
-                    clientId:(NSString *)newClientId
-           andEntityTypeName:(NSString *)newEntityTypeName;
-+ (NSString *)captureMobileEndpointUrl;
++ (void)setAccessToken:(NSString *)token;
 
-+ (NSString *)getAccessToken;
++ (void)setCaptureRedirectUri:(NSString *)redirectUri;
+
++ (void)setCaptureConfig:(JRCaptureConfig *)config;
+
++ (NSString *)captureTokenUrlWithMergeToken:(NSString *)mergeToken delegate:(id)delegate;
 
 + (void)clearSignInState;
 
-+ (void)setBackplaneChannelUrl:(NSString *)bpChannelUrl;
++ (JRCaptureData *)sharedCaptureData;
+
++ (NSString *)generateAndStoreRefreshSecret;
+
++ (NSMutableURLRequest *)requestWithPath:(NSString *)path;
+
+- (NSString *)downloadedFlowVersion;
+
+- (NSString *)redirectUri;
+
+- (void)loadFlow;
+
+- (NSString *)getForgottenPasswordFieldName;
+
+- (NSString *)responseType:(id)delegate;
 @end

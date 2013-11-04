@@ -51,7 +51,6 @@
 
 @implementation JRProfilesElement
 {
-    JRObjectId *_profilesElementId;
     JRJsonObject *_accessCredentials;
     NSString *_domain;
     JRStringArray *_followers;
@@ -61,21 +60,9 @@
     JRProfile *_profile;
     JRJsonObject *_provider;
     NSString *_remote_key;
+    JRJsonObject *_verifiedEmail;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)profilesElementId
-{
-    return _profilesElementId;
-}
-
-- (void)setProfilesElementId:(JRObjectId *)newProfilesElementId
-{
-    [self.dirtyPropertySet addObject:@"profilesElementId"];
-
-    [_profilesElementId autorelease];
-    _profilesElementId = [newProfilesElementId copy];
-}
 
 - (JRJsonObject *)accessCredentials
 {
@@ -190,6 +177,19 @@
     _remote_key = [newRemote_key copy];
 }
 
+- (JRJsonObject *)verifiedEmail
+{
+    return _verifiedEmail;
+}
+
+- (void)setVerifiedEmail:(JRJsonObject *)newVerifiedEmail
+{
+    [self.dirtyPropertySet addObject:@"verifiedEmail"];
+
+    [_verifiedEmail autorelease];
+    _verifiedEmail = [newVerifiedEmail copy];
+}
+
 - (id)init
 {
     if ((self = [super init]))
@@ -241,8 +241,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.profilesElementId ? [NSNumber numberWithInteger:[self.profilesElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.accessCredentials ? self.accessCredentials : [NSNull null])
                    forKey:@"accessCredentials"];
     [dictionary setObject:(self.domain ? self.domain : [NSNull null])
@@ -261,6 +259,8 @@
                    forKey:@"provider"];
     [dictionary setObject:(self.remote_key ? self.remote_key : [NSNull null])
                    forKey:@"remote_key"];
+    [dictionary setObject:(self.verifiedEmail ? self.verifiedEmail : [NSNull null])
+                   forKey:@"verifiedEmail"];
 
     if (forEncoder)
     {
@@ -295,10 +295,6 @@
         profilesElement.captureObjectPath      = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"profiles", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
         profilesElement.canBeUpdatedOnCapture = YES;
     }
-
-    profilesElement.profilesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
 
     profilesElement.accessCredentials =
         [dictionary objectForKey:@"accessCredentials"] != [NSNull null] ? 
@@ -336,6 +332,10 @@
         [dictionary objectForKey:@"remote_key"] != [NSNull null] ? 
         [dictionary objectForKey:@"remote_key"] : nil;
 
+    profilesElement.verifiedEmail =
+        [dictionary objectForKey:@"verifiedEmail"] != [NSNull null] ? 
+        [dictionary objectForKey:@"verifiedEmail"] : nil;
+
     if (fromDecoder)
         [profilesElement.dirtyPropertySet setSet:dirtyPropertySetCopy];
     else
@@ -357,10 +357,6 @@
 
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"profiles", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
-
-    self.profilesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
 
     self.accessCredentials =
         [dictionary objectForKey:@"accessCredentials"] != [NSNull null] ? 
@@ -401,12 +397,16 @@
         [dictionary objectForKey:@"remote_key"] != [NSNull null] ? 
         [dictionary objectForKey:@"remote_key"] : nil;
 
+    self.verifiedEmail =
+        [dictionary objectForKey:@"verifiedEmail"] != [NSNull null] ? 
+        [dictionary objectForKey:@"verifiedEmail"] : nil;
+
     [self.dirtyPropertySet setSet:dirtyPropertySetCopy];
 }
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"profilesElementId", @"accessCredentials", @"domain", @"identifier", @"profile", @"provider", @"remote_key", nil];
+    return [NSSet setWithObjects:@"accessCredentials", @"domain", @"identifier", @"profile", @"provider", @"remote_key", @"verifiedEmail", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -469,6 +469,9 @@
     if ([self.dirtyPropertySet containsObject:@"remote_key"])
         [dictionary setObject:(self.remote_key ? self.remote_key : [NSNull null]) forKey:@"remote_key"];
 
+    if ([self.dirtyPropertySet containsObject:@"verifiedEmail"])
+        [dictionary setObject:(self.verifiedEmail ? self.verifiedEmail : [NSNull null]) forKey:@"verifiedEmail"];
+
     [self.dirtyPropertySet removeAllObjects];
     return [NSDictionary dictionaryWithDictionary:dictionary];
 }
@@ -508,6 +511,7 @@
                    forKey:@"profile"];
     [dictionary setObject:(self.provider ? self.provider : [NSNull null]) forKey:@"provider"];
     [dictionary setObject:(self.remote_key ? self.remote_key : [NSNull null]) forKey:@"remote_key"];
+    [dictionary setObject:(self.verifiedEmail ? self.verifiedEmail : [NSNull null]) forKey:@"verifiedEmail"];
 
     [self.dirtyPropertySet removeAllObjects];
     return [NSDictionary dictionaryWithDictionary:dictionary];
@@ -584,6 +588,10 @@
     else if ((self.remote_key == nil) ^ (otherProfilesElement.remote_key == nil)) return NO; // xor
     else if (![self.remote_key isEqualToString:otherProfilesElement.remote_key]) return NO;
 
+    if (!self.verifiedEmail && !otherProfilesElement.verifiedEmail) /* Keep going... */;
+    else if ((self.verifiedEmail == nil) ^ (otherProfilesElement.verifiedEmail == nil)) return NO; // xor
+    else if (![self.verifiedEmail isEqual:otherProfilesElement.verifiedEmail]) return NO;
+
     return YES;
 }
 
@@ -592,7 +600,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"profilesElementId"];
     [dictionary setObject:@"JRJsonObject" forKey:@"accessCredentials"];
     [dictionary setObject:@"NSString" forKey:@"domain"];
     [dictionary setObject:@"JRStringArray" forKey:@"followers"];
@@ -602,13 +609,13 @@
     [dictionary setObject:@"JRProfile" forKey:@"profile"];
     [dictionary setObject:@"JRJsonObject" forKey:@"provider"];
     [dictionary setObject:@"NSString" forKey:@"remote_key"];
+    [dictionary setObject:@"JRJsonObject" forKey:@"verifiedEmail"];
 
     return [NSDictionary dictionaryWithDictionary:dictionary];
 }
 
 - (void)dealloc
 {
-    [_profilesElementId release];
     [_accessCredentials release];
     [_domain release];
     [_followers release];
@@ -618,6 +625,7 @@
     [_profile release];
     [_provider release];
     [_remote_key release];
+    [_verifiedEmail release];
 
     [super dealloc];
 }

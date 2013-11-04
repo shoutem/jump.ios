@@ -28,18 +28,120 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+//#import <FacebookSDK/FacebookSDK.h>
 #import "AppDelegate.h"
+#import "JRCapture.h"
+#import "BackplaneUtils.h"
+#import "debug_log.h"
+#import "JRSessionData.h"
+#import "JRCaptureData.h"
+#import "JRCaptureConfig.h"
+
+#ifdef JR_FACEBOOK_SDK_TEST
+#  import "FacebookSDK/FacebookSDK.h"
+#endif
+
+@interface JRSessionData (Internal)
++ (void)setServerUrl:(NSString *)serverUrl_;
+@end
+
+AppDelegate *appDelegate = nil;
 
 @implementation AppDelegate
+@synthesize window;
+@synthesize prefs;
 
-@synthesize window = _window;
+// Capture stuff:
+@synthesize captureUser;
+@synthesize captureClientId;
+@synthesize captureDomain;
+@synthesize captureLocale;
+@synthesize captureTraditionalSignInFormName;
+@synthesize captureFlowName;
+@synthesize engageAppId;
+@synthesize captureFlowVersion;
+@synthesize captureEnableThinRegistration;
+@synthesize captureTraditionalRegistrationFormName;
+@synthesize captureSocialRegistrationFormName;
+@synthesize captureAppId;
+@synthesize customProviders;
+@synthesize captureForgottenPasswordFormName;
 
+// Backplane / LiveFyre stuff:
+@synthesize bpChannelUrl;
+@synthesize lfToken;
+@synthesize bpBusUrlString;
+@synthesize liveFyreNetwork;
+@synthesize liveFyreSiteId;
+@synthesize liveFyreArticleId;
+
+// Demo state machine stuff:
+@synthesize currentProvider;
+@synthesize isNotYetCreated;
+//@synthesize engageSignInWasCanceled;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    appDelegate = self;
+
+    [self loadDemoConfigFromPlist];
+
+    JRCaptureConfig *config = [JRCaptureConfig emptyCaptureConfig];
+    config.engageAppId = engageAppId;
+    config.captureDomain = captureDomain;
+    config.captureClientId = captureClientId;
+    config.captureLocale = captureLocale;
+    config.captureFlowName = captureFlowName;
+    config.captureFlowVersion = captureFlowVersion;
+    config.captureSignInFormName = captureTraditionalSignInFormName;
+    config.captureTraditionalSignInType = JRTraditionalSignInEmailPassword;
+    config.enableThinRegistration = captureEnableThinRegistration;
+    config.customProviders = customProviders;
+    config.captureTraditionalRegistrationFormName = captureTraditionalRegistrationFormName;
+    config.captureSocialRegistrationFormName = captureSocialRegistrationFormName;
+    config.captureAppId = captureAppId;
+    config.forgottenPasswordFormName = captureForgottenPasswordFormName;
+    config.passwordRecoverUri = @"http://not-a-real-uri.janrain.com/forgotten_password.html";
+
+    [JRCapture setCaptureConfig:config];
+
+    [BackplaneUtils asyncFetchNewBackplaneChannelWithBus:bpBusUrlString
+                                              completion:^(NSString *newChannel, NSError *error)
+                                              {
+                                                  if (newChannel)
+                                                  {
+                                                      self.bpChannelUrl = newChannel;
+                                                  }
+                                                  else
+                                                  {
+                                                      ALog("%@", [error description]);
+                                                  }
+                                              }];
+
+    self.prefs = [NSUserDefaults standardUserDefaults];
+
+    self.currentProvider = [self.prefs objectForKey:cJRCurrentProvider];
+
+    NSData *archivedCaptureUser = [self.prefs objectForKey:cJRCaptureUser];
+    if (archivedCaptureUser)
+    {
+        self.captureUser = [NSKeyedUnarchiver unarchiveObjectWithData:archivedCaptureUser];
+    }
+
+#   ifdef JR_FACEBOOK_SDK_TEST
+        FBSession *t = [FBSession activeSession];
+#   endif
+
     return YES;
 }
+
+#   ifdef JR_FACEBOOK_SDK_TEST
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation
+{
+        [FBSession.activeSession handleOpenURL:url];
+}
+#   endif
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
@@ -64,13 +166,85 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-
+#   ifdef JR_FACEBOOK_SDK_TEST
+        [FBSession.activeSession handleDidBecomeActive];
+#   endif
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 
+}
+
+- (void)loadDemoConfigFromPlist
+{
+    // See assets folder in Resources project group for janrain-config-default.plist
+    // Copy to janrain-config.plist and change it to your details
+    NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"assets/janrain-config" ofType:@"plist"];
+    if (!plistPath)
+    {
+        plistPath = [[NSBundle mainBundle] pathForResource:@"assets/janrain-config-default" ofType:@"plist"];
+    }
+    NSDictionary *cfgPlist = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+    NSString *configKeyName = [cfgPlist objectForKey:@"default-config"];
+    self.captureEnableThinRegistration = YES;
+    [self parseConfigNamed:configKeyName fromConfigPlist:cfgPlist];
+}
+
+- (void)parseConfigNamed:(NSString *)cfgKeyName fromConfigPlist:(NSDictionary *)cfgPlist
+{
+    NSDictionary *cfg = [cfgPlist objectForKey:cfgKeyName];
+
+    NSString *parentConfig = [cfg objectForKey:@"parentConfig"];
+    if (parentConfig) [self parseConfigNamed:parentConfig fromConfigPlist:cfgPlist];
+
+    if ([cfg objectForKey:@"captureClientId"])
+        self.captureClientId = [cfg objectForKey:@"captureClientId"];
+    if ([cfg objectForKey:@"captureDomain"])
+        self.captureDomain = [cfg objectForKey:@"captureDomain"];
+    if ([cfg objectForKey:@"captureLocale"])
+        self.captureLocale = [cfg objectForKey:@"captureLocale"];
+    if ([cfg objectForKey:@"captureTraditionalSignInFormName"])
+        self.captureTraditionalSignInFormName = [cfg objectForKey:@"captureTraditionalSignInFormName"];
+    if ([cfg objectForKey:@"captureFlowName"])
+        self.captureFlowName = [cfg objectForKey:@"captureFlowName"];
+    if ([cfg objectForKey:@"captureEnableThinRegistration"])
+        self.captureEnableThinRegistration = [[cfg objectForKey:@"captureEnableThinRegistration"] boolValue];
+    if ([cfg objectForKey:@"captureFlowVersion"])
+        self.captureFlowVersion = [cfg objectForKey:@"captureFlowVersion"];
+    if ([cfg objectForKey:@"captureTraditionalRegistrationFormName"])
+        self.captureTraditionalRegistrationFormName = [cfg objectForKey:@"captureTraditionalRegistrationFormName"];
+    if ([cfg objectForKey:@"captureSocialRegistrationFormName"])
+        self.captureSocialRegistrationFormName = [cfg objectForKey:@"captureSocialRegistrationFormName"];
+    if ([cfg objectForKey:@"captureAppId"])
+        self.captureAppId = [cfg objectForKey:@"captureAppId"];
+    if ([cfg objectForKey:@"engageAppId"])
+        self.engageAppId = [cfg objectForKey:@"engageAppId"];
+    if ([cfg objectForKey:@"captureForgottenPasswordFormName"])
+        self.captureForgottenPasswordFormName = [cfg objectForKey:@"captureForgottenPasswordFormName"];
+    if ([cfg objectForKey:@"bpBusUrlString"])
+        self.bpBusUrlString = [cfg objectForKey:@"bpBusUrlString"];
+    if ([cfg objectForKey:@"bpChannelUrl"])
+        self.bpChannelUrl = [cfg objectForKey:@"bpChannelUrl"];
+    if ([cfg objectForKey:@"liveFyreNetwork"])
+        self.liveFyreNetwork = [cfg objectForKey:@"liveFyreNetwork"];
+    if ([cfg objectForKey:@"liveFyreSiteId"])
+        self.liveFyreSiteId = [cfg objectForKey:@"liveFyreSiteId"];
+    if ([cfg objectForKey:@"liveFyreArticleId"])
+        self.liveFyreArticleId = [cfg objectForKey:@"liveFyreArticleId"];
+    if ([cfg objectForKey:@"rpxDomain"])
+        [JRSessionData setServerUrl:[NSString stringWithFormat:@"https://%@", [cfg objectForKey:@"rpxDomain"]]];
+    if ([cfg objectForKey:@"flowUsesTestingCdn"])
+    {
+        BOOL useTestingCdn = [[cfg objectForKey:@"flowUsesTestingCdn"] boolValue];
+        [JRCaptureData sharedCaptureData].flowUsesTestingCdn = useTestingCdn;
+    }
+}
+
+- (void)saveCaptureUser
+{
+    [self.prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:self.captureUser] forKey:cJRCaptureUser];
 }
 
 @end

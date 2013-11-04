@@ -37,7 +37,6 @@
  * @brief A physical mailing address for this Contact.
  **/
 @interface JRAddressesElement : JRCaptureObject
-@property (nonatomic, readonly) JRObjectId *addressesElementId; /**< Simple identifier for this sub-entity @note The \e id of the object should not be set. */ 
 @property (nonatomic, copy)     NSString *country; /**< The country name component. */ 
 @property (nonatomic, copy)     NSString *extendedAddress; /**< The object's \e extendedAddress property */ 
 @property (nonatomic, copy)     NSString *formatted; /**< The full mailing address, formatted for display or use with a mailing label. */ 

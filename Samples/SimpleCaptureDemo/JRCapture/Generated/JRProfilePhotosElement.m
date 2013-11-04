@@ -46,25 +46,11 @@
 
 @implementation JRProfilePhotosElement
 {
-    JRObjectId *_profilePhotosElementId;
     JRBoolean *_primary;
     NSString *_type;
     NSString *_value;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)profilePhotosElementId
-{
-    return _profilePhotosElementId;
-}
-
-- (void)setProfilePhotosElementId:(JRObjectId *)newProfilePhotosElementId
-{
-    [self.dirtyPropertySet addObject:@"profilePhotosElementId"];
-
-    [_profilePhotosElementId autorelease];
-    _profilePhotosElementId = [newProfilePhotosElementId copy];
-}
 
 - (JRBoolean *)primary
 {
@@ -141,8 +127,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.profilePhotosElementId ? [NSNumber numberWithInteger:[self.profilePhotosElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.primary ? [NSNumber numberWithBool:[self.primary boolValue]] : [NSNull null])
                    forKey:@"primary"];
     [dictionary setObject:(self.type ? self.type : [NSNull null])
@@ -184,10 +168,6 @@
         profilePhotosElement.canBeUpdatedOnCapture = YES;
     }
 
-    profilePhotosElement.profilePhotosElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     profilePhotosElement.primary =
         [dictionary objectForKey:@"primary"] != [NSNull null] ? 
         [NSNumber numberWithBool:[(NSNumber*)[dictionary objectForKey:@"primary"] boolValue]] : nil;
@@ -222,10 +202,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"photos", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.profilePhotosElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.primary =
         [dictionary objectForKey:@"primary"] != [NSNull null] ? 
         [NSNumber numberWithBool:[(NSNumber*)[dictionary objectForKey:@"primary"] boolValue]] : nil;
@@ -243,7 +219,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"profilePhotosElementId", @"primary", @"type", @"value", nil];
+    return [NSSet setWithObjects:@"primary", @"type", @"value", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -335,7 +311,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"profilePhotosElementId"];
     [dictionary setObject:@"JRBoolean" forKey:@"primary"];
     [dictionary setObject:@"NSString" forKey:@"type"];
     [dictionary setObject:@"NSString" forKey:@"value"];
@@ -345,7 +320,6 @@
 
 - (void)dealloc
 {
-    [_profilePhotosElementId release];
     [_primary release];
     [_type release];
     [_value release];

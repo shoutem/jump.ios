@@ -51,7 +51,6 @@
 
 @implementation JROrganizationsElement
 {
-    JRObjectId *_organizationsElementId;
     NSString *_department;
     NSString *_description;
     NSString *_endDate;
@@ -63,19 +62,6 @@
     NSString *_type;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)organizationsElementId
-{
-    return _organizationsElementId;
-}
-
-- (void)setOrganizationsElementId:(JRObjectId *)newOrganizationsElementId
-{
-    [self.dirtyPropertySet addObject:@"organizationsElementId"];
-
-    [_organizationsElementId autorelease];
-    _organizationsElementId = [newOrganizationsElementId copy];
-}
 
 - (NSString *)department
 {
@@ -233,8 +219,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.organizationsElementId ? [NSNumber numberWithInteger:[self.organizationsElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.department ? self.department : [NSNull null])
                    forKey:@"department"];
     [dictionary setObject:(self.description ? self.description : [NSNull null])
@@ -287,10 +271,6 @@
         organizationsElement.captureObjectPath      = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"organizations", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
         organizationsElement.canBeUpdatedOnCapture = YES;
     }
-
-    organizationsElement.organizationsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
 
     organizationsElement.department =
         [dictionary objectForKey:@"department"] != [NSNull null] ? 
@@ -350,10 +330,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"organizations", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.organizationsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.department =
         [dictionary objectForKey:@"department"] != [NSNull null] ? 
         [dictionary objectForKey:@"department"] : nil;
@@ -398,7 +374,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"organizationsElementId", @"department", @"description", @"endDate", @"location", @"name", @"primary", @"startDate", @"title", @"type", nil];
+    return [NSSet setWithObjects:@"department", @"description", @"endDate", @"location", @"name", @"primary", @"startDate", @"title", @"type", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -560,7 +536,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"organizationsElementId"];
     [dictionary setObject:@"NSString" forKey:@"department"];
     [dictionary setObject:@"NSString" forKey:@"description"];
     [dictionary setObject:@"NSString" forKey:@"endDate"];
@@ -576,7 +551,6 @@
 
 - (void)dealloc
 {
-    [_organizationsElementId release];
     [_department release];
     [_description release];
     [_endDate release];

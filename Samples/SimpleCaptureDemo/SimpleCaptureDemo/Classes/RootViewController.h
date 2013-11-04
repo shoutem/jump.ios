@@ -27,27 +27,35 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- Author: ${USER}
- Date:   ${DATE}
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
 #import <UIKit/UIKit.h>
-#import "SharedData.h"
+#import "BackplaneUtils.h"
 #import "JRCaptureObject.h"
 
-@interface RootViewController : UIViewController <DemoSignInDelegate, JRCaptureObjectDelegate>
+@interface RootViewController : UIViewController
 - (IBAction)browseButtonPressed:(id)sender;
 - (IBAction)updateButtonPressed:(id)sender;
-- (IBAction)thirdButtonPressed:(id)sender;
+- (IBAction)refreshButtonPressed:(id)sender;
 - (IBAction)signInButtonPressed:(id)sender;
+- (IBAction)facebookAuthButtonPressed:(id)sender;
+- (IBAction)tradAuthButtonPressed:(id)sender;
 - (IBAction)signOutButtonPressed:(id)sender;
-@property (weak, nonatomic) IBOutlet UIButton *shareWidgetButton;
+- (IBAction)shareButtonPressed:(id)sender;
+- (IBAction)refetchButtonPressed:(id)sender;
+- (IBAction)forgotPasswordButtonPressed:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *shareButton;
 @property (weak) IBOutlet UILabel *currentUserLabel;
 @property (weak) IBOutlet UIImageView *currentUserProviderIcon;
 @property (weak) IBOutlet UIButton *browseButton;
-@property (weak) IBOutlet UIButton *updateButton;
-@property (weak) IBOutlet UIButton *captureWidgetButton;
+@property (weak) IBOutlet UIButton *formButton;
+@property (weak) IBOutlet UIButton *refreshButton;
 @property (weak) IBOutlet UIButton *signInButton;
 @property (weak) IBOutlet UIButton *signOutButton;
+@property (weak, nonatomic) IBOutlet UIButton *tradAuthButton;
+@property (weak, nonatomic) IBOutlet UIButton *directFacebookAuthButton;
+@property (weak, nonatomic) IBOutlet UIButton *refetchButton;
+@property (weak, nonatomic) IBOutlet UIButton *forgotPasswordButton;
+@property(nonatomic, strong) NSDictionary *customUi;
 @end

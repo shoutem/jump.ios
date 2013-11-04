@@ -28,24 +28,22 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#import "JRCapture.h"
-#import "JREngage.h"
-#import "JRConventionalSignInViewController.h"
+#import "JRCaptureTypes.h"
 
-@interface JREngageWrapper : NSObject <JREngageSigninDelegate>
-+ (void)configureEngageWithCaptureMobileEndpointUrlAndAppId:(NSString *)appId;
+@protocol JRCaptureDelegate;
 
-+ (void)startAuthenticationDialogWithConventionalSignIn:(JRConventionalSigninType)nativeSigninType
-                            andCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
-                                            forDelegate:(id<JRCaptureSigninDelegate>)delegate;
+@interface JREngageWrapper : NSObject
 
-+ (void)startAuthenticationDialogOnProvider:(NSString*)provider
-               withCustomInterfaceOverrides:(NSDictionary*)customInterfaceOverrides
-                                forDelegate:(id<JRCaptureSigninDelegate>)delegate;
++ (void)configureEngageWithAppId:(NSString *)appId customIdentityProviders:(NSDictionary *)customProviders;
 
-#ifdef JRENGAGE_SHARING_WITH_CAPTURE
-+ (void)startSocialPublishingDialogWithActivity:(JRActivityObject*)activity
-                   withCustomInterfaceOverrides:(NSDictionary*)customInterfaceOverrides
-                                    forDelegate:(id<JRCaptureSharingDelegate>)delegate;
-#endif // JRENGAGE_SHARING_WITH_CAPTURE
++ (void)startAuthenticationDialogWithTraditionalSignIn:(JRTraditionalSignInType)nativeSignInType
+                           andCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                           forDelegate:(id <JRCaptureDelegate>)delegate;
+
++ (void)startAuthenticationDialogOnProvider:(NSString *)provider
+               withCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                 mergeToken:(NSString *)mergeToken
+                                forDelegate:(id <JRCaptureDelegate>)delegate;
+
++ (id)getDelegate;
 @end

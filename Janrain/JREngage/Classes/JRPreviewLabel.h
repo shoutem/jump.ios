@@ -42,35 +42,14 @@
 @end
 
 @interface JRPreviewLabel : UIView
-{
-    UILabel *usernameLabel;
-    UILabel *textLabelLine1;
-    UILabel *textLabelLine2;
-    UILabel *textLabelLine3;
-    UILabel *urlLabel;
-
-    // TODO: Use NSAttributedStrings so you can change individual pieces and
-    // find words/line-breaks (nextWordFromIndex:forward:/lineBreakBeforeIndex:withinRange:)
-
-    NSString *username;
-    NSString *url;
-    NSString *usertext;
-    NSString *text;
-
-    CGFloat fontSize;
-    UIFont *font;
-    UIFont *boldFont;
-
-    id<JRPreviewLabelDelegate> delegate;
-    CGFloat contentHeight;
-}
 @property (retain) id<JRPreviewLabelDelegate> delegate;
 @property (copy) NSString *username;
 @property (copy) NSString *url;
-@property (copy) NSString *usertext;
+@property (copy, nonatomic) NSString *userText;
 @property (readonly) NSString *text;
-@property CGFloat fontSize;
+//@property CGFloat fontSize;
 
-- (id)initWithFrame:(CGRect)aRect defaultUsername:(NSString*)defaultUsername defaultUsertext:(NSString*)defaultUsertext
-         defaultUrl:(NSString*)defaultUrl andDefaultFontSize:(CGFloat)defaultFontSize;
+- (id)initWithFrame:(CGRect)aRect defaultUsername:(NSString *)defaultUsername
+    defaultUserText:(NSString *)defaultUserText
+         defaultUrl:(NSString *)defaultUrl andDefaultFontSize:(CGFloat)defaultFontSize;
 @end

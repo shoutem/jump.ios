@@ -36,32 +36,45 @@
 
 use strict;
 use warnings;
-
-require './ObjCMethodParts.pl';
-require './CaptureParserIO.pl';
-
-use JSON; # imports encode_json, decode_json, to_json and from_json.
+use JSON;
 use Getopt::Std;
 
+require './ObjCMethodParts.pl';
+
+sub openSchemaNamed {
+  my $name = $_[0];
+
+  open(FH, "$name") or usage("[ERROR] Could not open schema $name for reading");
+
+  return join("", <FH>);
+}
+
+sub usage {
+  print "Usage:\n";
+  print "CaptureSchemaParser.pl -f path/to/schema.json -o path/to/output/directory\n";
+  die $_[0];
+}
 
 ########################################################################
-# First things first: If the schema was passed in on the command line
-# with the option '-f', open it up, otherwise, find out where it is
+# schema was passed in on the command line
+# with the option '-f', open it up
 ########################################################################
 our ($opt_o);
 our ($opt_f);
 getopt('fo');
 my $schemaName = $opt_f;
 my $schema = "";
+my $reserved_schema = "";
 
 if ($schemaName) {
   $schema = openSchemaNamed ($schemaName);
+  $reserved_schema = openSchemaNamed ("reserved_attributes.json");
 } else {
-  $schema = getCaptureSchema (0, "");
+  usage("[ERROR] Schema not found.");
 }
 
 ########################################################################
-# Next, if the output directory was passed in on the command line
+# the output directory was passed in on the command line
 # with the option '-o', remember it
 ########################################################################
 my $outputDir;
@@ -71,7 +84,9 @@ if (defined $opt_o) {
   $usingCustomOutputDir = 1;
   $outputDir = $opt_o;
   
-  print "Using cutom output directory: $outputDir\n";
+  print "Using output directory: $outputDir\n";
+} else {
+  usage("[ERROR] Missing output directory parameter.");
 }
 
 
@@ -1616,12 +1631,7 @@ sub recursiveParse {
   ##########################################################################
   $hFile .= "\@interface $className : JRCaptureObject\n";# <NSCopying, JRJsonifying>\n";
   $hFile .= $propertiesSection;
-    
-#  if ($requiredProperties) {
-#    $minConstructorDocSection[5] = $minClassConstructorDocSection[5] = $objFromDictDocSection[5] = 
-#        " * \n * \@note\n * Method creates a $className object without the required properties TODO: MAKE A LIST!\n * These properties are required when updating the object on Capture.\n"; 
-#  }
-  
+
   $hFile .= "\n/**\n * \@name Constructors\n **/\n/*\@{*/\n";
   
   for (my $i = 0; $i < @minConstructorDocSection; $i++) { $hFile .= $minConstructorDocSection[$i]; }
@@ -1755,13 +1765,6 @@ sub recursiveParse {
       $mFile .= $classConstructorSection[$i];
     }
   }
-  
-#   ##########################################################################                                           
-#   # Loop through our copy constructor pieces...                                           
-#   ##########################################################################                                           
-#   for (my $i = 0; $i < @copyConstructorSection; $i++) {                                           
-#       $mFile .= $copyConstructorSection[$i];                                           
-#   }                                           
 
   ##########################################################################
   # Loop through the rest of our methods, and add '@end'
@@ -1779,10 +1782,6 @@ sub recursiveParse {
       $mFile .= $decodeUserFromDictSection[$i];
     }
   }
-  
-#   for (my $i = 0; $i < @updateFromDictSection; $i++) {                                           
-#     $mFile .= $updateFromDictSection[$i];                                           
-#   }                                           
   
   for (my $i = 0; $i < @replaceFromDictSection; $i++) {
     $mFile .= $replaceFromDictSection[$i];
@@ -1843,6 +1842,7 @@ my $json = JSON->new->allow_nonref;
 # Decode our JSON schema
 ##########################################################################
 my $topMostScalarRef = $json->decode( $schema );
+my $reservedAttributes = $json->decode( $reserved_schema );
 
 ##########################################################################
 # If the schema attr_defs is buried in a dictionary, pull them out
@@ -1860,6 +1860,15 @@ if (ref($topMostScalarRef) eq "ARRAY") {
   
   $attrDefsArrayRef = $schemaDictionaryObj{"attr_defs"};
 }
+
+my %reservedAttrsToAdd = map { $_->{'name'}, $_ } @$reservedAttributes;
+
+for my $attrDef (@$attrDefsArrayRef) {
+    my $name = $attrDef->{'name'};
+    delete $reservedAttrsToAdd{$name} if (exists $reservedAttrsToAdd{$name});
+}
+
+push @$attrDefsArrayRef, values %reservedAttrsToAdd;
 
 ##########################################################################
 # Then recursively parse it...
@@ -1906,15 +1915,6 @@ foreach my $fileName (@mFileNames) {
   print "Writing $fileName... ";
   print FILE $mFiles{$fileName};
   print "Finished $fileName.\n";
-}
-
-# TODO: Make sure the correct input/output directories are known by doxygen when passing in a different out dir
-# TODO: Better success/fail reporting if doxygen works or not
-
-if (!$usingCustomOutputDir) {
-  my $doxygenResult = `cd $pathToOutputDir `;
-  $doxygenResult   .= `doxygen ../../../Docs/Doxygen/JRCapture/Doxyfile 2>&1`;
-  print $doxygenResult;
 }
 
 print "\n[SUCCESS] Capture schema successfully parsed.\n\n";

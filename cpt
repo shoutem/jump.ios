@@ -1,2 +1,0 @@
-cp -v Test/CaptureInterfaceUnitTests/JRCapture/*.h Janrain/JRCapture/Classes/
-cp -v Test/CaptureInterfaceUnitTests/JRCapture/*.m Janrain/JRCapture/Classes/

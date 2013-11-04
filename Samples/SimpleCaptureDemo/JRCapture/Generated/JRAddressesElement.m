@@ -46,7 +46,6 @@
 
 @implementation JRAddressesElement
 {
-    JRObjectId *_addressesElementId;
     NSString *_country;
     NSString *_extendedAddress;
     NSString *_formatted;
@@ -61,19 +60,6 @@
     NSString *_type;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)addressesElementId
-{
-    return _addressesElementId;
-}
-
-- (void)setAddressesElementId:(JRObjectId *)newAddressesElementId
-{
-    [self.dirtyPropertySet addObject:@"addressesElementId"];
-
-    [_addressesElementId autorelease];
-    _addressesElementId = [newAddressesElementId copy];
-}
 
 - (NSString *)country
 {
@@ -267,8 +253,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.addressesElementId ? [NSNumber numberWithInteger:[self.addressesElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.country ? self.country : [NSNull null])
                    forKey:@"country"];
     [dictionary setObject:(self.extendedAddress ? self.extendedAddress : [NSNull null])
@@ -327,10 +311,6 @@
         addressesElement.captureObjectPath      = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"addresses", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
         addressesElement.canBeUpdatedOnCapture = YES;
     }
-
-    addressesElement.addressesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
 
     addressesElement.country =
         [dictionary objectForKey:@"country"] != [NSNull null] ? 
@@ -402,10 +382,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"addresses", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.addressesElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.country =
         [dictionary objectForKey:@"country"] != [NSNull null] ? 
         [dictionary objectForKey:@"country"] : nil;
@@ -459,7 +435,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"addressesElementId", @"country", @"extendedAddress", @"formatted", @"latitude", @"locality", @"longitude", @"poBox", @"postalCode", @"primary", @"region", @"streetAddress", @"type", nil];
+    return [NSSet setWithObjects:@"country", @"extendedAddress", @"formatted", @"latitude", @"locality", @"longitude", @"poBox", @"postalCode", @"primary", @"region", @"streetAddress", @"type", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -623,7 +599,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"addressesElementId"];
     [dictionary setObject:@"NSString" forKey:@"country"];
     [dictionary setObject:@"NSString" forKey:@"extendedAddress"];
     [dictionary setObject:@"NSString" forKey:@"formatted"];
@@ -642,7 +617,6 @@
 
 - (void)dealloc
 {
-    [_addressesElementId release];
     [_country release];
     [_extendedAddress release];
     [_formatted release];

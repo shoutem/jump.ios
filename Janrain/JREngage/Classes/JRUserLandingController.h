@@ -33,26 +33,26 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #import <UIKit/UIKit.h>
-
-@class JRWebViewController;
-@class JRSessionData;
-@class JRInfoBar;
+#import "JRSessionData.h"
+#import "JRInfoBar.h"
 
 @interface JRUserLandingController : UIViewController <UINavigationBarDelegate, UITableViewDelegate,
-                                                        UITableViewDataSource, UIAlertViewDelegate, UITextFieldDelegate>
+        UITableViewDataSource, UIAlertViewDelegate, UITextFieldDelegate, JRUserInterfaceDelegate>
 {
-    JRSessionData   *sessionData;
-    NSDictionary    *customInterface;
+    JRSessionData *sessionData;
+    NSDictionary *customInterface;
 
     BOOL iPad;
 
-    UILabel     *titleView;
-    UIView      *myBackgroundView;
+    UILabel *titleView;
+    UIView *myBackgroundView;
     UITableView *myTableView;
 
-    JRInfoBar   *infoBar;
+    JRInfoBar *infoBar;
 }
-@property (nonatomic, retain) IBOutlet UIView      *myBackgroundView;
-@property (nonatomic, retain) IBOutlet UITableView *myTableView;
-- (id)initWithNibName:(NSString*)nibNameOrNil bundle:(NSBundle*)nibBundleOrNil andCustomInterface:(NSDictionary*)theCustomInterface;
+@property(nonatomic, retain) IBOutlet UIView *myBackgroundView;
+@property(nonatomic, retain) IBOutlet UITableView *myTableView;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+   andCustomInterface:(NSDictionary *)theCustomInterface;
 @end

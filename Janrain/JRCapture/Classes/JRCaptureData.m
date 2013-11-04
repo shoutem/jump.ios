@@ -28,21 +28,15 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef DEBUG
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-
+#import "debug_log.h"
 #import "JRCaptureData.h"
 #import "SFHFKeychainUtils.h"
+#import "JRCaptureConfig.h"
+#import "NSDictionary+JRQueryParams.h"
+#import "JREngageWrapper.h"
 
 #define cJRCaptureKeychainIdentifier @"capture_tokens.janrain"
-#define cJRCaptureUserUuid           @"jrcapture.captureUserUuid"
-#define cJRCreationTokenDummyUuid    @"no_uuid_available.new_user"
-#define cJRMissingUuidDummyString    @"no_uuid_available"
+#define cJRCaptureKeychainUserName @"capture_user"
 
 @implementation NSString (JRString_UrlWithDomain)
 - (NSString *)urlStringFromBaseDomain
@@ -57,63 +51,92 @@
 }
 @end
 
-static NSString* applicationBundleDisplayNameAndIdentifier()
+static NSString*appBundleDisplayNameAndIdentifier()
 {
     NSDictionary *infoPlist = [[NSBundle mainBundle] infoDictionary];
     NSString *name = [infoPlist objectForKey:@"CFBundleDisplayName"];
-    NSString *ident = [infoPlist objectForKey:@"CFBundleIdentifier"];
+    NSString *identifier = [infoPlist objectForKey:@"CFBundleIdentifier"];
 
-    return [NSString stringWithFormat:@"%@.%@", name, ident];
+    return [NSString stringWithFormat:@"%@.%@", name, identifier];
 }
 
 typedef enum
 {
     JRTokenTypeAccess,
-    JRTokenTypeCreation,
+    JRTokenTypeRefresh,
 } JRTokenType;
 
-@interface JRCaptureData ()
-+ (NSString *)loadUuidForLastLoggedInUser;
-+ (void)saveUuidForLastLoggedInUser:(NSString *)uuid;
-+ (NSString *)retrieveTokenFromKeychainOfType:(JRTokenType)tokenType forUser:(NSString *)uuid;
+static NSString *const FLOW_KEY = @"JR_capture_flow";
 
-@property (nonatomic, copy) NSString *captureApidBaseUrl;
-@property (nonatomic, copy) NSString *captureUIBaseUrl;
-@property (nonatomic, copy) NSString *clientId;
-@property (nonatomic, copy) NSString *entityTypeName;
-@property (nonatomic, copy) NSString *accessToken;
-@property (nonatomic, copy) NSString *creationToken;
-@property (nonatomic, copy) NSString *uuid;
+@interface JRCaptureData ()
+
+@property(nonatomic, retain) NSString *accessToken;
+@property(nonatomic, retain) NSString *refreshSecret;
+
+@property(nonatomic, retain) NSString *captureBaseUrl;
+@property(nonatomic, retain) NSString *clientId;
+@property(nonatomic, retain) NSString *captureAppId;
+@property(nonatomic, retain) NSString *captureRedirectUri;
+@property(nonatomic, retain) NSString *passwordRecoverUri;
+
+@property(nonatomic, retain) NSString *captureFlowName;
+@property(nonatomic, retain) NSString *captureFlowVersion;
+@property(nonatomic, retain) NSString *captureLocale;
+@property(nonatomic, retain) NSString *captureTraditionalSignInFormName;
+@property(nonatomic, retain) NSString *captureTraditionalRegistrationFormName;
+@property(nonatomic, retain) NSString *captureSocialRegistrationFormName;
+@property(nonatomic, retain) NSString *captureForgottenPasswordFormName;
+
+//@property(nonatomic) JRTraditionalSignInType captureTradSignInType;
+@property(nonatomic) BOOL captureEnableThinRegistration;
+
+@property(nonatomic, retain) NSDictionary *captureFlow;
+@property(nonatomic) BOOL initialized;
 @end
 
 @implementation JRCaptureData
 static JRCaptureData *singleton = nil;
 
 @synthesize clientId;
-@synthesize entityTypeName;
-@synthesize captureApidBaseUrl = captureApidDomain;
-@synthesize captureUIBaseUrl = captureUIDomain;
+@synthesize captureBaseUrl;
 @synthesize accessToken;
-@synthesize creationToken;
-@synthesize uuid;
+@synthesize refreshSecret;
 @synthesize bpChannelUrl;
-
+@synthesize captureLocale;
+@synthesize captureTraditionalSignInFormName;
+//@synthesize captureTradSignInType;
+@synthesize captureFlowName;
+@synthesize captureTraditionalRegistrationFormName;
+@synthesize captureSocialRegistrationFormName;
+@synthesize captureForgottenPasswordFormName;
+@synthesize captureFlowVersion;
+@synthesize captureAppId;
+@synthesize captureFlow;
+@synthesize captureRedirectUri;
+@synthesize passwordRecoverUri;
 
 - (JRCaptureData *)init
 {
     if ((self = [super init]))
     {
-        uuid          = [[JRCaptureData loadUuidForLastLoggedInUser] retain];
-        accessToken   = [[JRCaptureData retrieveTokenFromKeychainOfType:JRTokenTypeAccess forUser:uuid] retain];
-        creationToken = [[JRCaptureData retrieveTokenFromKeychainOfType:JRTokenTypeCreation forUser:cJRCreationTokenDummyUuid] retain];
+        self.accessToken = [self readTokenForTokenName:@"access_token"];
+        self.refreshSecret = [self readTokenForTokenName:@"refresh_secret"];
     }
 
     return self;
 }
 
-+ (JRCaptureData *)captureDataInstance
+- (NSString *)readTokenForTokenName:(NSString *)tokenName
 {
-    if (singleton == nil) {
+    return [SFHFKeychainUtils getPasswordForUsername:cJRCaptureKeychainUserName
+                                      andServiceName:[JRCaptureData serviceNameForTokenName:tokenName]
+                                               error:nil];
+}
+
++ (JRCaptureData *)sharedCaptureData
+{
+    if (singleton == nil)
+    {
         singleton = [((JRCaptureData*)[super allocWithZone:NULL]) init];
     }
 
@@ -122,10 +145,10 @@ static JRCaptureData *singleton = nil;
 
 + (id)allocWithZone:(NSZone *)zone
 {
-    return [[self captureDataInstance] retain];
+    return [[self sharedCaptureData] retain];
 }
 
-- (id)copyWithZone:(NSZone *)zone
+- (id)copyWithZone:(__unused NSZone *)zone __unused
 {
     return self;
 }
@@ -147,204 +170,296 @@ static JRCaptureData *singleton = nil;
     return self;
 }
 
-+ (NSString *)captureMobileEndpointUrl
-{
-    NSString *autoCreate = @"false"; // TODO, parameterize into JRCaptureData
-    JRCaptureData *captureDataInstance = [JRCaptureData captureDataInstance];
-    NSString *bpChannelParam = captureDataInstance.bpChannelUrl ?
-            [NSString stringWithFormat:@"&bp_channel=%@", captureDataInstance.bpChannelUrl] : @"";
-    return [NSString stringWithFormat:@"%@/oauth/mobile_signin?client_id=%@&redirect_uri=%@/cmeu&auto_create=%@%@",
-                                      captureDataInstance.captureUIBaseUrl, captureDataInstance.clientId,
-                                      captureDataInstance.captureUIBaseUrl, autoCreate, bpChannelParam];
-}
++ (NSString *)captureTokenUrlWithMergeToken:(NSString *)mergeToken delegate:(id)delegate {
+    JRCaptureData *captureData = [JRCaptureData sharedCaptureData];
+    NSString *redirectUri = [singleton redirectUri];
+    NSString *thinReg = [JRCaptureData sharedCaptureData].captureEnableThinRegistration ? @"true" : @"false";
+    NSMutableDictionary *urlArgs = [NSMutableDictionary dictionaryWithDictionary:
+            @{
+                    @"client_id" : captureData.clientId,
+                    @"locale" : captureData.captureLocale,
+                    @"response_type" : [captureData responseType:delegate],
+                    @"redirect_uri" : redirectUri,
+                    @"thin_registration" : thinReg,
+                    @"refresh_secret" : [self generateAndStoreRefreshSecret],
+            }];
 
-+ (void)setCaptureApidDomain:(NSString *)newCaptureApidDomain captureUIDomain:(NSString *)newCaptureUIDomain
-                    clientId:(NSString *)newClientId andEntityTypeName:(NSString *)newEntityTypeName
-{
-    JRCaptureData *captureDataInstance     = [JRCaptureData captureDataInstance];
-    captureDataInstance.captureApidBaseUrl = [newCaptureApidDomain urlStringFromBaseDomain];
-    captureDataInstance.captureUIBaseUrl   = [newCaptureUIDomain urlStringFromBaseDomain];
-    captureDataInstance.clientId           = newClientId;
-    captureDataInstance.entityTypeName     = newEntityTypeName;
-}
-
-+ (NSString *)loadUuidForLastLoggedInUser
-{
-    return [[NSUserDefaults standardUserDefaults] objectForKey:cJRCaptureUserUuid];
-}
-
-+ (void)saveUuidForLastLoggedInUser:(NSString *)uuid
-{
-    [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:cJRCaptureUserUuid];
-}
-
-+ (NSString *)serviceNameForTokenType:(JRTokenType)tokenType
-{
-    return [NSString stringWithFormat:@"%@.%@.%@.",
-                cJRCaptureKeychainIdentifier,
-                (tokenType == JRTokenTypeAccess ? @"access_token" : @"creation_token"),
-                applicationBundleDisplayNameAndIdentifier()];
-}
-
-+ (void)deleteTokenFromKeychainOfType:(JRTokenType)tokenType forUser:(NSString *)uuid
-{
-    NSError  *error = nil;
-
-    [SFHFKeychainUtils deleteItemForUsername:uuid
-                              andServiceName:[JRCaptureData serviceNameForTokenType:tokenType]
-                                       error:&error];
-
-    //if (error)
-    //    ALog (@"Error deleting device token from keychain: %@", [error localizedDescription]);
-}
-
-+ (void)storeTokenInKeychain:(NSString *)token ofType:(JRTokenType)tokenType forUser:(NSString *)uuid
-{
-    NSError  *error = nil;
-
-    [SFHFKeychainUtils storeUsername:uuid
-                         andPassword:token
-                      forServiceName:[JRCaptureData serviceNameForTokenType:tokenType]
-                      updateExisting:YES
-                               error:&error];
-
-    if (error)
-        ALog (@"Error storing device token in keychain: %@", [error localizedDescription]);
-}
-
-+ (NSString *)retrieveTokenFromKeychainOfType:(JRTokenType)tokenType forUser:(NSString *)uuid
-{
-    NSError  *error = nil;
-
-    NSString *token = [SFHFKeychainUtils getPasswordForUsername:uuid
-                                                 andServiceName:[JRCaptureData serviceNameForTokenType:tokenType]
-                                                          error:&error];
-
-    if (error)
-        ALog (@"Error retrieving device token in keychain: %@", [error localizedDescription]);
-
-    return token;
-}
-
-+ (void)saveNewToken:(NSString *)token ofType:(JRTokenType)tokenType andUuid:(NSString *)newUuid
-{
-    NSString *oldUuid = [[JRCaptureData captureDataInstance] uuid];
-
-    [JRCaptureData deleteTokenFromKeychainOfType:JRTokenTypeAccess forUser:oldUuid];
-    [JRCaptureData deleteTokenFromKeychainOfType:JRTokenTypeCreation forUser:oldUuid];
-
-    [[JRCaptureData captureDataInstance] setUuid:newUuid];
-    [JRCaptureData saveUuidForLastLoggedInUser:newUuid];
-
-    if (tokenType == JRTokenTypeAccess)
+    if (captureData.captureFlowName) [urlArgs setObject:captureData.captureFlowName forKey:@"flow"];
+    if ([captureData downloadedFlowVersion])
+        [urlArgs setObject:[captureData downloadedFlowVersion] forKey:@"flow_version"];
+    if (captureData.bpChannelUrl) [urlArgs setObject:captureData.bpChannelUrl forKey:@"bp_channel"];
+    if (mergeToken) [urlArgs setObject:mergeToken forKey:@"merge_token"];
+    if (captureData.captureSocialRegistrationFormName)
     {
-        [JRCaptureData captureDataInstance].accessToken = token;
-        [JRCaptureData captureDataInstance].creationToken = nil;
-
-        [JRCaptureData storeTokenInKeychain:token ofType:JRTokenTypeAccess forUser:newUuid];
+        [urlArgs setObject:captureData.captureSocialRegistrationFormName forKey:@"registration_form"];
     }
-    else
-    {
-        [JRCaptureData captureDataInstance].creationToken = token;
-        [JRCaptureData captureDataInstance].accessToken = nil;
 
-        [JRCaptureData storeTokenInKeychain:token ofType:JRTokenTypeCreation forUser:newUuid];
+    NSString *getParams = [urlArgs asJRURLParamString];
+    return [NSString stringWithFormat:@"%@/oauth/auth_native?%@", captureData.captureBaseUrl, getParams];
+}
+
++ (NSString *)generateAndStoreRefreshSecret
+{
+    #define RANDOM_BYTES 20
+
+    uint8_t refreshSecret_[RANDOM_BYTES];
+    int errCode = SecRandomCopyBytes(kSecRandomDefault, RANDOM_BYTES, refreshSecret_);
+    if (errCode)
+    {
+        ALog(@"UNABLE TO GENERATE RANDOM REFRESH SECRET. ERRNO: %d", errno);
+        return nil;
+    }
+
+    NSMutableString *buffer = [NSMutableString string];
+    for (int i=0; i<RANDOM_BYTES; i++) [buffer appendFormat:@"%02hhx", refreshSecret_[i]];
+    [buffer replaceCharactersInRange:NSMakeRange(0, 1) withString:@"a"];
+
+    [JRCaptureData saveNewToken:[NSString stringWithString:buffer] ofType:JRTokenTypeRefresh];
+    return [JRCaptureData sharedCaptureData].refreshSecret;
+}
+
+- (NSString *)downloadedFlowVersion
+{
+    id version = [captureFlow objectForKey:@"version"];
+    if ([version isKindOfClass:[NSString class]]) return version;
+    ALog(@"Error parsing flow version: %@", version);
+    return nil;
+}
+
+- (NSString *)redirectUri
+{
+    if (captureRedirectUri) return captureRedirectUri;
+    return [NSString stringWithFormat:@"%@/cmeu", singleton.captureBaseUrl];
+}
+
++ (void)setCaptureConfig:(JRCaptureConfig *)config
+{
+    JRCaptureData *captureDataInstance = [JRCaptureData sharedCaptureData];
+    if (captureDataInstance.initialized)
+    {
+        [NSException raiseJRDebugException:@"JRCaptureDuplicateInitializationException" format:@"Repeated "
+                "initialization of JRCapture is unsafe"];
+    }
+    captureDataInstance.initialized = YES;
+    captureDataInstance.captureBaseUrl = [config.captureDomain urlStringFromBaseDomain];
+    captureDataInstance.clientId = config.captureClientId;
+    captureDataInstance.captureLocale = config.captureLocale;
+    captureDataInstance.captureTraditionalSignInFormName = config.captureSignInFormName;
+    captureDataInstance.captureFlowName = config.captureFlowName;
+    captureDataInstance.captureEnableThinRegistration = config.enableThinRegistration;
+    captureDataInstance.captureTraditionalRegistrationFormName = config.captureTraditionalRegistrationFormName;
+    captureDataInstance.captureSocialRegistrationFormName = config.captureSocialRegistrationFormName;
+    captureDataInstance.captureFlowVersion = config.captureFlowVersion;
+    captureDataInstance.captureAppId = config.captureAppId;
+    captureDataInstance.captureForgottenPasswordFormName = config.forgottenPasswordFormName;
+    captureDataInstance.passwordRecoverUri = config.passwordRecoverUri;
+
+    if ([captureDataInstance.captureLocale length] &&
+            [captureDataInstance.captureFlowName length] && [captureDataInstance.captureAppId length])
+    {
+        [captureDataInstance loadFlow];
+        [captureDataInstance downloadFlow];
     }
 }
 
-+ (void)setAccessToken:(NSString *)newAccessToken forUser:(NSString *)newUuid
+- (void)loadFlow
 {
-    if (!newUuid || [newUuid isEqualToString:@""])
-        newUuid = cJRMissingUuidDummyString;
-
-    [JRCaptureData saveNewToken:newAccessToken ofType:JRTokenTypeAccess andUuid:newUuid];
+    self.captureFlow =
+            [NSKeyedUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] objectForKey:FLOW_KEY]];
 }
 
-+ (NSString *)getAccessToken
-{
-    return [JRCaptureData captureDataInstance].accessToken;
-}
+- (NSString *)getForgottenPasswordFieldName {
+    if (!self.captureForgottenPasswordFormName) return nil;
+    if (!self.captureForgottenPasswordFormName) {
+        [NSException raiseJRDebugException:@"JRCaptureMissingParameterException"
+                                    format:@"Missing capture configuration setting forgottenPasswordFormName"];
+    }
 
-+ (void)setCreationToken:(NSString *)newCreationToken// forUser:(NSString *)newUuid
-{
-    NSString *newUuid = cJRCreationTokenDummyUuid;
+    NSDictionary *fields = [self.captureFlow objectForKey:@"fields"];
+    NSDictionary *form = [fields objectForKey:self.captureForgottenPasswordFormName];
+    NSArray *formFields = [form objectForKey:@"fields"];
 
-    [JRCaptureData saveNewToken:newCreationToken ofType:JRTokenTypeCreation andUuid:newUuid];
-}
+    for (NSString *fieldName in formFields) {
+        NSDictionary *field = [fields objectForKey:fieldName];
+        NSString * type = [field objectForKey:@"type"];
 
-+ (NSString *)accessTokenForUser:(NSString *)uuid
-{
-    if (!uuid || [uuid isEqualToString:@""])
-        uuid = cJRMissingUuidDummyString;
-
-    if ([uuid isEqualToString:[[JRCaptureData captureDataInstance] uuid]])
-        return [[JRCaptureData captureDataInstance] accessToken];
+        if ([type isEqualToString:@"email"] || [type isEqualToString:@"text"]) {
+            return fieldName;
+        }
+    }
 
     return nil;
 }
 
-+ (NSString *)accessToken
+- (void)downloadFlow
 {
-    return [[JRCaptureData captureDataInstance] accessToken];
+    NSString *flowVersion = self.captureFlowVersion ? self.captureFlowVersion : @"HEAD";
+
+    NSString *flowUrlString =
+            [NSString stringWithFormat:@"https://%@.cloudfront.net/widget_data/flows/%@/%@/%@/%@.json",
+                                       self.flowUsesTestingCdn ? @"dlzjvycct5xka" : @"d1lqe9temigv1p",
+                                       self.captureAppId, self.captureFlowName, flowVersion,
+                                       self.captureLocale];
+    NSMutableURLRequest *downloadRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:flowUrlString]];
+    [downloadRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
+
+    [NSURLConnection sendAsynchronousRequest:downloadRequest queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *r, NSData *d, NSError *e)
+                           {
+                               if (e)
+                               {
+                                   ALog(@"Error downloading flow: %@", e);
+                                   return;
+                               }
+                               DLog(@"Fetched flow URL: %@", flowUrlString);
+                               [self processFlow:d response:(NSHTTPURLResponse *) r];
+                           }];
 }
 
-+ (NSString *)creationToken
+- (void)processFlow:(NSData *)flowData response:(NSHTTPURLResponse *)response
 {
-    return [[JRCaptureData captureDataInstance] creationToken];
+    NSError *jsonErr = nil;
+    NSObject *parsedFlow = [NSJSONSerialization JSONObjectWithData:flowData options:(NSJSONReadingOptions) 0
+                                                             error:&jsonErr];
+
+    if (jsonErr)
+    {
+        NSString *responseString = [NSHTTPURLResponse localizedStringForStatusCode:[response statusCode]];
+        ALog(@"Error parsing flow JSON, response: %@", responseString);
+        ALog(@"Error parsing flow JSON, err: %@", [jsonErr description]);
+        return;
+    }
+    
+    if (![parsedFlow isKindOfClass:[NSDictionary class]])
+    {
+        ALog(@"Error parsing flow JSON, top level object was not a hash...: %@", [parsedFlow description]);
+        return;
+    }
+
+    self.captureFlow = (NSDictionary *) parsedFlow;
+    DLog(@"Parsed flow, version: %@", [self downloadedFlowVersion]);
+    
+    [self writeCaptureFlow];
 }
 
-+ (NSString *)creationTokenForUser:(NSString *)uuid
+- (void)writeCaptureFlow
 {
-    return [[JRCaptureData captureDataInstance] creationToken];
+    [[NSUserDefaults standardUserDefaults] setValue:[NSKeyedArchiver archivedDataWithRootObject:captureFlow]
+                                             forKey:FLOW_KEY];
 }
 
-+ (NSString *)captureApidBaseUrl
++ (NSString *)serviceNameForTokenName:(NSString *)tokenName
 {
-    return [[JRCaptureData captureDataInstance] captureApidBaseUrl];
+    return [NSString stringWithFormat:@"%@.%@.%@.", cJRCaptureKeychainIdentifier, tokenName,
+                     appBundleDisplayNameAndIdentifier()];
 }
 
-+ (NSString *)captureUIBaseUrl
++ (void)deleteTokenNameFromKeychain:(NSString *)name
 {
-    return [[JRCaptureData captureDataInstance] captureUIBaseUrl];
+    [SFHFKeychainUtils deleteItemForUsername:cJRCaptureKeychainUserName
+                              andServiceName:[JRCaptureData serviceNameForTokenName:name]
+                                       error:nil];
 }
 
-+ (NSString *)clientId
++ (void)storeTokenInKeychain:(NSString *)token name:(NSString *)name
 {
-    return [[JRCaptureData captureDataInstance] clientId];
+    NSError *error = nil;
+
+    [SFHFKeychainUtils storeUsername:cJRCaptureKeychainUserName andPassword:token
+                      forServiceName:[JRCaptureData serviceNameForTokenName:name]
+                      updateExisting:YES error:&error];
+
+    if (error)
+    {
+        ALog (@"Error storing device token in keychain: %@", [error localizedDescription]);
+    }
 }
 
-+ (NSString *)entityTypeName
++ (void)saveNewToken:(NSString *)token ofType:(JRTokenType)tokenType
 {
-    return [[JRCaptureData captureDataInstance] entityTypeName];
+    NSString *name = tokenType == JRTokenTypeAccess ? @"access_token" : @"refresh_secret";
+    [JRCaptureData deleteTokenNameFromKeychain:name];
+
+    if (tokenType == JRTokenTypeAccess)
+    {
+        [JRCaptureData sharedCaptureData].accessToken = token;
+    }
+    else if (tokenType == JRTokenTypeRefresh)
+    {
+        [JRCaptureData sharedCaptureData].refreshSecret = token;
+    }
+
+    [JRCaptureData storeTokenInKeychain:token name:name];
+}
+
++ (void)setCaptureRedirectUri:(NSString *)captureRedirectUri
+{
+    [JRCaptureData sharedCaptureData].captureRedirectUri = captureRedirectUri;
+}
+
++ (void)setAccessToken:(NSString *)token
+{
+    [JRCaptureData saveNewToken:token ofType:JRTokenTypeAccess];
+}
+
++ (NSString *)captureBaseUrl __unused
+{
+    return [[JRCaptureData sharedCaptureData] captureBaseUrl];
+}
+
++ (NSString *)clientId __unused
+{
+    return [[JRCaptureData sharedCaptureData] clientId];
 }
 
 - (void)dealloc
 {
     [clientId release];
-    [entityTypeName release];
-    [captureApidDomain release];
-    [captureUIDomain release];
     [accessToken release];
-    [creationToken release];
-    [uuid release];
+    [captureBaseUrl release];
+    [captureFlowName release];
+    [captureLocale release];
+    [captureTraditionalSignInFormName release];
     [bpChannelUrl release];
+    [captureTraditionalRegistrationFormName release];
+    [captureFlowVersion release];
+    [captureTraditionalRegistrationFormName release];
+    [captureFlowVersion release];
+    [captureAppId release];
+    [captureAppId release];
+    [captureFlow release];
+    [refreshSecret release];
+    [captureRedirectUri release];
+    [passwordRecoverUri release];
+    [captureSocialRegistrationFormName release];
+    [captureForgottenPasswordFormName release];
     [super dealloc];
 }
 
 + (void)clearSignInState
 {
-    DLog(@"");
-    NSString* currentUuid = [JRCaptureData captureDataInstance].uuid;
-    [JRCaptureData deleteTokenFromKeychainOfType:JRTokenTypeAccess forUser:currentUuid];
-    [JRCaptureData deleteTokenFromKeychainOfType:JRTokenTypeCreation forUser:currentUuid];
-    [JRCaptureData saveUuidForLastLoggedInUser:nil];
-    [JRCaptureData captureDataInstance].accessToken = nil;
-    [JRCaptureData captureDataInstance].creationToken = nil;
-    [JRCaptureData captureDataInstance].uuid = nil;
+    [JRCaptureData deleteTokenNameFromKeychain:@"access_token"];
+    [JRCaptureData deleteTokenNameFromKeychain:@"refresh_secret"];
+    [JRCaptureData sharedCaptureData].accessToken = nil;
+    [JRCaptureData sharedCaptureData].refreshSecret = nil;
 }
 
-+ (void)setBackplaneChannelUrl:(NSString *)bpChannelUrl
++ (NSMutableURLRequest *)requestWithPath:(NSString *)path
 {
-    [JRCaptureData captureDataInstance].bpChannelUrl = bpChannelUrl;
+    JRCaptureData *data = [JRCaptureData sharedCaptureData];
+    NSString *urlString = [[data captureBaseUrl] stringByAppendingString:path];
+    return [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+}
+
++ (void)setBackplaneChannelUrl:(NSString *)bpChannelUrl __unused
+{
+    [JRCaptureData sharedCaptureData].bpChannelUrl = bpChannelUrl;
+}
+
+- (NSString *)responseType:(id)delegate {
+    if ([delegate respondsToSelector:@selector(captureDidSucceedWithCode:)]) {
+        return @"code_and_token";
+    }
+    return @"token";
 }
 @end

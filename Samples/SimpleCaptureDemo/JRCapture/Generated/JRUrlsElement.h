@@ -37,7 +37,6 @@
  * @brief URL of a web page relating to this Contact.
  **/
 @interface JRUrlsElement : JRCaptureObject
-@property (nonatomic, readonly) JRObjectId *urlsElementId; /**< Simple identifier for this sub-entity @note The \e id of the object should not be set. */ 
 @property (nonatomic, copy)     JRBoolean *primary; /**< The object's \e primary property @note A ::JRBoolean property is a property of type \ref typesTable "boolean" and a typedef of \e NSNumber. The accepted values can only be <code>[NSNumber numberWithBool:<em>myBool</em>]</code> or <code>nil</code> */ 
 @property (nonatomic, copy)     NSString *type; /**< The object's \e type property */ 
 @property (nonatomic, copy)     NSString *value; /**< The object's \e value property */ 

@@ -34,30 +34,17 @@
 
 #import <UIKit/UIKit.h>
 #import "JRConnectionManager.h"
+#import "JRSessionData.h"
 
-@class JRSessionData;
-@class JRInfoBar;
 static NSString *const WINDOWS_LIVE_LOAD = @"request";
 static NSString *const MEU_CONNECTION_TAG = @"rpx_result";
 
-@interface JRWebViewController : UIViewController <UINavigationBarDelegate, UIWebViewDelegate, JRConnectionManagerDelegate>
-{
-    JRSessionData   *sessionData;
-    NSDictionary    *customInterface;
+@interface JRWebViewController : UIViewController <UINavigationBarDelegate, UIWebViewDelegate,
+        JRConnectionManagerDelegate, JRUserInterfaceDelegate>
+@property(nonatomic, retain) IBOutlet UIView *myBackgroundView;
+@property(nonatomic, retain) IBOutlet UIWebView *myWebView;
+@property(nonatomic, retain) NSString *originalCustomUserAgent;
 
-    UIView    *titleView;
-    UIView    *myBackgroundView;
-    UIWebView *myWebView;
-
-    JRInfoBar   *infoBar;
-
-    BOOL keepProgress;
-    BOOL userHitTheBackButton;
-    BOOL connectionDataAlreadyDownloadedThis;
-}
-@property (nonatomic, retain) IBOutlet UIView    *myBackgroundView;
-@property (nonatomic, retain) IBOutlet UIWebView *myWebView;
-@property (nonatomic, retain) NSString *originalUserAgent;
-
-- (id)initWithNibName:(NSString*)nibNameOrNil bundle:(NSBundle*)nibBundleOrNil andCustomInterface:(NSDictionary*)theCustomInterface;
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+   andCustomInterface:(NSDictionary *)theCustomInterface;
 @end

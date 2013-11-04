@@ -33,28 +33,20 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#import "NSMutableURLRequest+JRRequestUtils.h"
 #import "JRConnectionManager.h"
-
-#ifdef DEBUG
-#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-
-
+#import "debug_log.h"
 
 @implementation NSString (JRString_UrlEscaping)
-- (NSString*)stringByAddingUrlPercentEscapes
+- (NSString *)stringByAddingUrlPercentEscapes
 {
 
-    NSString *encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(
-                                NULL,
-                                (CFStringRef)self,
-                                NULL,
-                                (CFStringRef)@"!*'();:@&=+$,/?%#[]",
-                                kCFStringEncodingUTF8);
+    NSString *encodedString = (NSString *) CFURLCreateStringByAddingPercentEscapes(
+            NULL,
+            (CFStringRef) self,
+            NULL,
+            (CFStringRef) @"!*'();:@&=+$,/?%#[]",
+            kCFStringEncodingUTF8);
 
     return [encodedString autorelease];
 }
@@ -62,46 +54,46 @@
 
 @interface ConnectionData : NSObject
 {
-    NSURLRequest  *_request;
+    NSURLRequest *_request;
     NSMutableData *_response;
     NSURLResponse *_fullResponse;
-    id             _tag;
+    id _tag;
 
     BOOL _returnFullResponse;
 
-    id<JRConnectionManagerDelegate> _delegate;
+    id <JRConnectionManagerDelegate> _delegate;
 }
 
-@property (retain)   NSURLRequest  *request;
-@property (retain)   NSMutableData *response;
-@property (retain)   NSURLResponse *fullResponse;
-@property (readonly) id             tag;
-@property (readonly) BOOL returnFullResponse;
-@property (readonly) id<JRConnectionManagerDelegate> delegate;
+@property(retain) NSURLRequest *request;
+@property(retain) NSMutableData *response;
+@property(retain) NSURLResponse *fullResponse;
+@property(readonly) id tag;
+@property(readonly) BOOL returnFullResponse;
+@property(readonly) id <JRConnectionManagerDelegate> delegate;
 @end
 
 @implementation ConnectionData
-@synthesize request            = _request;
-@synthesize response           = _response;
-@synthesize fullResponse       = _fullResponse;
+@synthesize request = _request;
+@synthesize response = _response;
+@synthesize fullResponse = _fullResponse;
 @synthesize returnFullResponse = _returnFullResponse;
-@synthesize tag                = _tag;
-@synthesize delegate           = _delegate;
+@synthesize tag = _tag;
+@synthesize delegate = _delegate;
 
-- (id)initWithRequest:(NSURLRequest*)request
-          forDelegate:(id<JRConnectionManagerDelegate>)delegate
+- (id)initWithRequest:(NSURLRequest *)request
+          forDelegate:(id <JRConnectionManagerDelegate>)delegate
    returnFullResponse:(BOOL)returnFullResponse
               withTag:(id)userdata
 {
-//  DLog(@"");
+    //DLog(@"");
 
     if ((self = [super init]))
     {
-        _request            = [request retain];
-        _tag                = [userdata retain];
+        _request = [request retain];
+        _tag = [userdata retain];
         _returnFullResponse = returnFullResponse;
 
-        _response     = nil;
+        _response = nil;
         _fullResponse = nil;
 
         _delegate = [delegate retain];
@@ -112,8 +104,6 @@
 
 - (void)dealloc
 {
-//  DLog(@"");
-
     [_request release];
     [_response release];
     [_fullResponse release];
@@ -124,19 +114,18 @@
 }
 @end
 
-
 @implementation JRConnectionManager
 @synthesize connectionBuffers;
 
-static JRConnectionManager* singleton = nil;
+static JRConnectionManager *singleton = nil;
 
-- (JRConnectionManager*)init
+- (JRConnectionManager *)init
 {
     if ((self = [super init]))
     {
         connectionBuffers = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                                                      &kCFTypeDictionaryKeyCallBacks,
-                                                      &kCFTypeDictionaryValueCallBacks);
+                &kCFTypeDictionaryKeyCallBacks,
+                &kCFTypeDictionaryValueCallBacks);
     }
 
     return self;
@@ -144,8 +133,9 @@ static JRConnectionManager* singleton = nil;
 
 + (id)getJRConnectionManager
 {
-    if (singleton == nil) {
-        singleton = [((JRConnectionManager*)[super allocWithZone:NULL]) init];
+    if (singleton == nil)
+    {
+        singleton = [((JRConnectionManager *) [super allocWithZone:NULL]) init];
     }
 
     return singleton;
@@ -156,7 +146,7 @@ static JRConnectionManager* singleton = nil;
     return [[self getJRConnectionManager] retain];
 }
 
-- (id)copyWithZone:(NSZone *)zone
+- (id)copyWithZone:(__unused NSZone *)zone __unused
 {
     return self;
 }
@@ -171,7 +161,9 @@ static JRConnectionManager* singleton = nil;
     return NSUIntegerMax;
 }
 
-- (oneway void)release { }
+- (oneway void)release
+{
+}
 
 - (id)autorelease
 {
@@ -180,36 +172,33 @@ static JRConnectionManager* singleton = nil;
 
 + (NSUInteger)openConnections
 {
-    JRConnectionManager* connectionManager = [JRConnectionManager getJRConnectionManager];
-    return [(NSDictionary*)connectionManager.connectionBuffers count];
+    JRConnectionManager *connectionManager = [JRConnectionManager getJRConnectionManager];
+    return [(NSDictionary *) connectionManager.connectionBuffers count];
 }
 
 - (void)startActivity
 {
-    UIApplication* app = [UIApplication sharedApplication];
+    UIApplication *app = [UIApplication sharedApplication];
     app.networkActivityIndicatorVisible = YES;
 }
 
 - (void)stopActivity
 {
-    if ([(NSDictionary*)connectionBuffers count] == 0)
+    if ([(NSDictionary *) connectionBuffers count] == 0)
     {
-        UIApplication* app = [UIApplication sharedApplication];
+        UIApplication *app = [UIApplication sharedApplication];
         app.networkActivityIndicatorVisible = NO;
     }
 }
 
-/* Hmmmm... now that I've set up a full singleton instance of this class, will this ever be called? (No.)
-   Leaving it here in case I want to make this not a singleton, so that my library isn't eating memory
-   and I don't have to rewrite it. */
 - (void)dealloc
 {
-//  DLog(@"");
-    ConnectionData* connectionData;
+    //DLog(@"");
+    ConnectionData *connectionData;
 
-    for (NSURLConnection* connection in [(NSMutableDictionary*)connectionBuffers allKeys])
+    for (NSURLConnection *connection in [(NSMutableDictionary *) connectionBuffers allKeys])
     {
-        connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+        connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
         [connection cancel];
 
         if ([connectionData tag])
@@ -226,35 +215,22 @@ static JRConnectionManager* singleton = nil;
     [super dealloc];
 }
 
-+ (NSURLRequest*)aCopyOfTheRequestWithANonCrashingUserAgent:(NSURLRequest*)request
-{
-    // Question to self: Am I calling this every time, and if so, will this mess up any user-agent detection?
-    NSMutableURLRequest* new_request = [[request mutableCopyWithZone:nil] autorelease];
-
-    [new_request setValue:@"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.4) Gecko/20100527 Firefox/3.6.4 GTB7.1"
-       forHTTPHeaderField:@"User-Agent"];
-
-//    DLog(@"willSendNewRequest: %@", [[new_request URL] absoluteString]);
-
-    return new_request;
-}
-
-+ (bool)createConnectionFromRequest:(NSURLRequest*)request
-                        forDelegate:(id<JRConnectionManagerDelegate>)delegate
++ (bool)createConnectionFromRequest:(NSURLRequest *)request
+                        forDelegate:(id <JRConnectionManagerDelegate>)delegate
                  returnFullResponse:(BOOL)returnFullResponse
-                            withTag:(id)userdata
+                            withTag:(id)userData
 {
-//    DLog(@"request: %@", [[request URL] absoluteString]);
+    NSString *body = [[[NSString alloc] initWithData:[request HTTPBody] encoding:NSUTF8StringEncoding] autorelease];
+    DLog(@"request to '%@' with body: '%@'", [[request URL] absoluteString], body);
 
-    JRConnectionManager* connectionManager = [JRConnectionManager getJRConnectionManager];
+    JRConnectionManager *connectionManager = [JRConnectionManager getJRConnectionManager];
     CFMutableDictionaryRef connectionBuffers = connectionManager.connectionBuffers;
-
-    request = [JRConnectionManager aCopyOfTheRequestWithANonCrashingUserAgent:request];
 
     if (![NSURLConnection canHandleRequest:request])
         return NO;
 
-    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:connectionManager startImmediately:NO];
+    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:connectionManager
+                                                          startImmediately:NO];
 
     if (!connection)
         return NO;
@@ -262,10 +238,8 @@ static JRConnectionManager* singleton = nil;
     ConnectionData *connectionData = [[ConnectionData alloc] initWithRequest:request
                                                                  forDelegate:delegate
                                                           returnFullResponse:returnFullResponse
-                                                                     withTag:userdata];
-    CFDictionaryAddValue(connectionBuffers,
-                         connection,
-                         connectionData);
+                                                                     withTag:userData];
+    CFDictionaryAddValue(connectionBuffers, connection, connectionData);
 
     [connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [connection start];
@@ -278,24 +252,23 @@ static JRConnectionManager* singleton = nil;
     return YES;
 }
 
-+ (bool)createConnectionFromRequest:(NSURLRequest*)request
-                        forDelegate:(id<JRConnectionManagerDelegate>)delegate
-                            withTag:(id)userdata
++ (bool)createConnectionFromRequest:(NSURLRequest *)request
+                        forDelegate:(id <JRConnectionManagerDelegate>)delegate
+                            withTag:(id)userData
 {
-    return [JRConnectionManager createConnectionFromRequest:request forDelegate:delegate returnFullResponse:NO withTag:userdata];
+    return [JRConnectionManager createConnectionFromRequest:request forDelegate:delegate returnFullResponse:NO
+                                                    withTag:userData];
 }
 
-+ (void)stopConnectionsForDelegate:(id<JRConnectionManagerDelegate>)delegate
++ (void)stopConnectionsForDelegate:(id <JRConnectionManagerDelegate>)delegate
 {
-//  DLog(@"");
-
-    JRConnectionManager* connectionManager = [JRConnectionManager getJRConnectionManager];
+    JRConnectionManager *connectionManager = [JRConnectionManager getJRConnectionManager];
     CFMutableDictionaryRef connectionBuffers = connectionManager.connectionBuffers;
     ConnectionData *connectionData = nil;
 
-    for (NSURLConnection* connection in [(NSMutableDictionary*)connectionBuffers allKeys])
+    for (NSURLConnection *connection in [(NSMutableDictionary *) connectionBuffers allKeys])
     {
-        connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+        connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
 
         if ([connectionData delegate] == delegate)
         {
@@ -314,16 +287,53 @@ static JRConnectionManager* singleton = nil;
     [connectionManager stopActivity];
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
++ (void)jsonRequestToUrl:(NSString *)url params:(NSDictionary *)params
+     completionHandler:(void(^)(id parsedResponse, NSError *e))handler
 {
-    //DLog(@"");
-    [[(ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection) response] appendData:data];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+    [request JR_setBodyWithParams:params];
+    NSString *p = [[[NSString alloc] initWithData:[request HTTPBody] encoding:NSUTF8StringEncoding] autorelease];
+    DLog(@"URL: \"%@\" params: \"%@\"", url, p);
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *r, NSData *d, NSError *e)
+                           {
+                               if (e)
+                               {
+                                   ALog(@"Error fetching JSON: %@", e);
+                                   handler(nil, e);
+                               }
+                               else
+                               {
+                                   NSString *bodyString =
+                                           [[[NSString alloc] initWithData:d
+                                                                  encoding:NSUTF8StringEncoding] autorelease];
+                                   NSError *err = nil;
+                                   id parsedJson = [NSJSONSerialization JSONObjectWithData:d
+                                                                                   options:(NSJSONReadingOptions) 0
+                                                                                     error:&err];
+                                   ALog(@"Fetched: \"%@\"", bodyString);
+                                   if (err)
+                                   {
+                                       ALog(@"Parse err: \"%@\"", err);
+                                       handler(nil, e);
+                                   }
+                                   else
+                                   {
+                                       handler(parsedJson, nil);
+                                   }
+                               }
+                           }];
 }
 
-- (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    [[(ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection) response] appendData:data];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     //DLog(@"");
-    ConnectionData *connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+    ConnectionData *connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
 
     [connectionData setResponse:[[[NSMutableData alloc] init] autorelease]];
 
@@ -331,61 +341,32 @@ static JRConnectionManager* singleton = nil;
         connectionData.fullResponse = response;
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection*)connection
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     //DLog(@"");
-    ConnectionData *connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+    ConnectionData *connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
 
-    NSURLRequest  *request      = [connectionData request];
+    NSURLRequest *request = [connectionData request];
     NSURLResponse *fullResponse = [connectionData fullResponse];
-    NSData        *responseBody = [connectionData response];
-    id             userdata     = [connectionData tag];
-    id<JRConnectionManagerDelegate> delegate = [connectionData delegate];
+    NSData *responseBody = [connectionData response];
+    id userData = [connectionData tag];
+    id <JRConnectionManagerDelegate> delegate = [connectionData delegate];
 
     NSStringEncoding encoding = NSUTF8StringEncoding;
-    // Unused code to support other string encodings:
-    //if ([fullResponse isKindOfClass:[NSHTTPURLResponse class]])
-    //{
-    //    NSHTTPURLResponse *_r = (NSHTTPURLResponse *) fullResponse;
-    //    NSEnumerator *keys = [_r.allHeaderFields keyEnumerator];
-    //    id key;
-    //    while (key = [keys nextObject])
-    //    {
-    //        if (![key isKindOfClass:[NSString class]]) continue;
-    //        if ([[key lowercaseString] isEqualToString:@"content-type"])
-    //        {
-    //            NSString *ct = [_r.allHeaderFields objectForKey:key];
-    //            NSArray *pieces = [ct componentsSeparatedByString:@";"];
-    //            for (NSUInteger i = 1; i < ([pieces count] - 1); i++)
-    //            {
-    //                NSString *piece = [pieces objectAtIndex:i];
-    //                NSArray *maybeCharsetPair = [piece componentsSeparatedByString:@"="];
-    //                if ([maybeCharsetPair count] != 2) continue;
-    //                NSString *maybeCharset = [(NSString *) [maybeCharsetPair objectAtIndex:0] lowercaseString];
-    //                NSCharacterSet *const whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-    //                maybeCharset = [maybeCharset stringByTrimmingCharactersInSet:whitespace];
-    //                if ([maybeCharset isEqualToString:@"charset"])
-    //                {
-    //                    NSString *charset = [[maybeCharsetPair objectAtIndex:1] lowercaseString];
-    //                    charset = [charset stringByTrimmingCharactersInSet:whitespace];
-    //                    // match charset to an NSStringEncoding here
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 
-    if ([connectionData fullResponse] == NO)
+    if (![connectionData fullResponse])
     {
         NSString *payload = [[[NSString alloc] initWithData:responseBody encoding:encoding] autorelease];
 
         if ([delegate respondsToSelector:@selector(connectionDidFinishLoadingWithPayload:request:andTag:)])
-            [delegate connectionDidFinishLoadingWithPayload:payload request:request andTag:userdata];
+            [delegate connectionDidFinishLoadingWithPayload:payload request:request andTag:userData];
     }
     else
     {
-        if ([delegate respondsToSelector:@selector(connectionDidFinishLoadingWithFullResponse:unencodedPayload:request:andTag:)])
-            [delegate connectionDidFinishLoadingWithFullResponse:fullResponse unencodedPayload:responseBody request:request andTag:userdata];
+        SEL finishMsg = @selector(connectionDidFinishLoadingWithFullResponse:unencodedPayload:request:andTag:);
+        if ([delegate respondsToSelector:finishMsg])
+            [delegate connectionDidFinishLoadingWithFullResponse:fullResponse unencodedPayload:responseBody
+                                                         request:request andTag:userData];
     }
 
     CFDictionaryRemoveValue(connectionBuffers, connection);
@@ -393,18 +374,18 @@ static JRConnectionManager* singleton = nil;
     [self stopActivity];
 }
 
-- (void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     DLog(@"error message: %@", [error localizedDescription]);
 
-    ConnectionData *connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+    ConnectionData *connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
 
-    NSURLRequest *request  = [connectionData request];
-    id            userdata = [connectionData tag];
-    id<JRConnectionManagerDelegate> delegate = [connectionData delegate];
+    NSURLRequest *request = [connectionData request];
+    id userData = [connectionData tag];
+    id <JRConnectionManagerDelegate> delegate = [connectionData delegate];
 
     if ([delegate respondsToSelector:@selector(connectionDidFailWithError:request:andTag:)])
-        [delegate connectionDidFailWithError:error request:request andTag:userdata];
+        [delegate connectionDidFailWithError:error request:request andTag:userData];
 
     CFDictionaryRemoveValue(connectionBuffers, connection);
 
@@ -412,36 +393,42 @@ static JRConnectionManager* singleton = nil;
 }
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request
-                                                          redirectResponse:(NSURLResponse *)redirectResponse
+            redirectResponse:(NSURLResponse *)redirectResponse
 {
     //DLog(@"");
-    ConnectionData *connectionData = (ConnectionData*)CFDictionaryGetValue(connectionBuffers, connection);
+    ConnectionData *connectionData = (ConnectionData *) CFDictionaryGetValue(connectionBuffers, connection);
 
     if ([connectionData returnFullResponse])
         connectionData.fullResponse = redirectResponse;
 
-    return [JRConnectionManager aCopyOfTheRequestWithANonCrashingUserAgent:request];
+    return request;
 }
 
-//- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
-//    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
-//}
-//
-//- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-//    NSArray *trustedHosts = [NSArray arrayWithObject:@"demo.staging.janraincapture.com"];
-//    if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
-//        if ([trustedHosts containsObject:challenge.protectionSpace.host])
-//            [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-//
-//    [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-//}
+- (void)              connection:(NSURLConnection *)connection
+didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
+{
+    DLog(@"");
+}
 
-- (void)connection:(NSURLConnection *)connection didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge  { DLog(@""); }
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge { DLog(@""); }
-- (NSCachedURLResponse*)connection:(NSURLConnection*)connection willCacheResponse:(NSCachedURLResponse*)cachedResponse       { /*DLog(@"");*/ return cachedResponse; }
+- (void)               connection:(NSURLConnection *)connection
+didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
+{
+    DLog(@"");
+}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
+                  willCacheResponse:(NSCachedURLResponse *)cachedResponse
+{
+    /*DLog(@"");*/
+    return cachedResponse;
+}
+
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten
-                                               totalBytesWritten:(NSInteger)totalBytesWritten
-                                       totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
-{ /*DLog(@"bytesWritten: %d, totalBytesWritten: %d, totalBytesExpected: %d", bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);*/ }
+        totalBytesWritten:(NSInteger)totalBytesWritten
+totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
+{
+    //DLog(@"bytesWritten: %d, totalBytesWritten: %d, totalBytesExpected: %d", bytesWritten, totalBytesWritten,
+    //    totalBytesExpectedToWrite);
+}
 
 @end

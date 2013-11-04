@@ -729,7 +729,7 @@ static NSArray* filteredArrayOfValidUrls (NSArray *urls)
 {
     [self validateActivity];
 
-    NSMutableDictionary *dict = [[[NSMutableDictionary alloc] initWithCapacity:7] autorelease];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setObject:_action forKey:@"action"];
 
     // Question to self: Figure out why Engage fails if there is no url, but accepts an empty one.  Shouldn't it ignore the no-url
@@ -776,7 +776,7 @@ static NSArray* filteredArrayOfValidUrls (NSArray *urls)
     if ([_properties count])
         [dict setObject:_properties forKey:@"properties"];
 
-    return dict;//[NSDictionary dictionaryWithObject:dict forKey:@"activity"];
+    return dict;
 }
 
 + (JRActivityObject *)activityObjectFromDictionary:(NSDictionary *)activityDictionary

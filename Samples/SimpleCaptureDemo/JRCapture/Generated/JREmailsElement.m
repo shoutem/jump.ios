@@ -46,25 +46,11 @@
 
 @implementation JREmailsElement
 {
-    JRObjectId *_emailsElementId;
     JRBoolean *_primary;
     NSString *_type;
     NSString *_value;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)emailsElementId
-{
-    return _emailsElementId;
-}
-
-- (void)setEmailsElementId:(JRObjectId *)newEmailsElementId
-{
-    [self.dirtyPropertySet addObject:@"emailsElementId"];
-
-    [_emailsElementId autorelease];
-    _emailsElementId = [newEmailsElementId copy];
-}
 
 - (JRBoolean *)primary
 {
@@ -141,8 +127,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.emailsElementId ? [NSNumber numberWithInteger:[self.emailsElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.primary ? [NSNumber numberWithBool:[self.primary boolValue]] : [NSNull null])
                    forKey:@"primary"];
     [dictionary setObject:(self.type ? self.type : [NSNull null])
@@ -184,10 +168,6 @@
         emailsElement.canBeUpdatedOnCapture = YES;
     }
 
-    emailsElement.emailsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     emailsElement.primary =
         [dictionary objectForKey:@"primary"] != [NSNull null] ? 
         [NSNumber numberWithBool:[(NSNumber*)[dictionary objectForKey:@"primary"] boolValue]] : nil;
@@ -222,10 +202,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"emails", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.emailsElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.primary =
         [dictionary objectForKey:@"primary"] != [NSNull null] ? 
         [NSNumber numberWithBool:[(NSNumber*)[dictionary objectForKey:@"primary"] boolValue]] : nil;
@@ -243,7 +219,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"emailsElementId", @"primary", @"type", @"value", nil];
+    return [NSSet setWithObjects:@"primary", @"type", @"value", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -335,7 +311,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"emailsElementId"];
     [dictionary setObject:@"JRBoolean" forKey:@"primary"];
     [dictionary setObject:@"NSString" forKey:@"type"];
     [dictionary setObject:@"NSString" forKey:@"value"];
@@ -345,7 +320,6 @@
 
 - (void)dealloc
 {
-    [_emailsElementId release];
     [_primary release];
     [_type release];
     [_value release];

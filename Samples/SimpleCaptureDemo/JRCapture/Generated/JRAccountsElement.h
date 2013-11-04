@@ -37,7 +37,6 @@
  * @brief Describes an account held by this Contact, which MAY be on the Service Provider's service, or MAY be on a different service.
  **/
 @interface JRAccountsElement : JRCaptureObject
-@property (nonatomic, readonly) JRObjectId *accountsElementId; /**< Simple identifier for this sub-entity @note The \e id of the object should not be set. */ 
 @property (nonatomic, copy)     NSString *domain; /**< The top-most authoritative domain for this account. */ 
 @property (nonatomic, copy)     JRBoolean *primary; /**< The object's \e primary property @note A ::JRBoolean property is a property of type \ref typesTable "boolean" and a typedef of \e NSNumber. The accepted values can only be <code>[NSNumber numberWithBool:<em>myBool</em>]</code> or <code>nil</code> */ 
 @property (nonatomic, copy)     NSString *userid; /**< A user ID number, usually chosen automatically, and usually numeric but sometimes alphanumeric. */ 

@@ -39,7 +39,7 @@
 #import "JRActivityObject.h"
 #import "JRConnectionManager.h"
 #import "debug_log.h"
-#import "JSONKit.h"
+#import "CDVJSON.h"
 
 @interface JREngagePhonegapPlugin ()
 @property(nonatomic, retain) NSMutableDictionary *fullAuthenticationResponse;
@@ -56,7 +56,6 @@
 @synthesize shareBlobs;
 @synthesize shareInProgress = _shareInProgress;
 
-
 - (id)init
 {
     if ((self = [super init]))
@@ -72,7 +71,7 @@
 
     DLog(@"print arguments: %@", command);
 
-    NSString *printString = [command argumentAtIndex:0];
+    NSString *printString = [command.arguments objectAtIndex:0];
 
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                       messageAsString:printString];
@@ -91,13 +90,8 @@
 
 - (void)finishWithSuccessMessage:(NSString *)message
 {
-    NSDictionary *messageDictionary = [message cdvjk_objectFromJSONString];
-    CDVPluginResult *pluginResult;
-    
-    if (messageDictionary)
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:messageDictionary];
-    else
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsString:message];
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackID];
     [self resetPluginState];
@@ -120,7 +114,7 @@
     [errorResponse setObject:error.localizedDescription forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse cdvjk_JSONString];
+    return [errorResponse JSONString];
 }
 
 - (NSString *)stringFromCode:(NSInteger)code andMessage:(NSString *)message
@@ -131,7 +125,7 @@
     [errorResponse setObject:message forKey:@"message"];
     [errorResponse setObject:@"fail" forKey:@"stat"];
 
-    return [errorResponse cdvjk_JSONString];
+    return [errorResponse JSONString];
 }
 
 - (void)saveAuthenticationBlob
@@ -144,40 +138,40 @@
     self.fullAuthenticationResponse = nil;
 }
 
-- (void)initializeJREngage:(CDVInvokedUrlCommand *)command
+- (void)initializeJREngage:(CDVInvokedUrlCommand *)command __unused
 {
     DLog(@"");
 
     self.callbackID = command.callbackId;
 
-    NSString *appId = [command argumentAtIndex:0];
+    NSString *engageAppId = [command.arguments objectAtIndex:0];
 
-    if (!appId)
+    if (!engageAppId)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRMissingAppIdError
                                                  andMessage:@"Missing appId in call to initialize"]];
         return;
     }
-
-    NSString *tokenUrl = [command argumentAtIndex:1];
+    
+    NSString *tokenUrl = ((id)[command.arguments objectAtIndex:1] == [NSNull null]) ? nil : [command.arguments objectAtIndex:1];
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"/JREngage-Info.plist"];
     NSMutableDictionary *infoPlist =
             [NSMutableDictionary dictionaryWithDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    NSMutableString *version = [NSMutableString stringWithString:[infoPlist objectForKey:@"CFBundleShortVersionString"]];
+    NSMutableString *ver = [NSMutableString stringWithString:[infoPlist objectForKey:@"CFBundleShortVersionString"]];
 
-    if (![version hasSuffix:@":cordova"])
-        [version appendString:@":cordova"];
+    if (![ver hasSuffix:@":cordova"])
+        [ver appendString:@":cordova"];
 
-    [infoPlist setObject:version forKey:@"CFBundleShortVersionString"];
+    [infoPlist setObject:ver forKey:@"CFBundleShortVersionString"];
     [infoPlist writeToFile:path atomically:YES];
 
-    [JREngage setEngageAppId:appId tokenUrl:tokenUrl andDelegate:self];
+    [JREngage setEngageAppId:engageAppId tokenUrl:tokenUrl andDelegate:self];
 
     [self finishWithSuccessMessage:@"{'stat':'ok','message':'Initializing JREngage...'}"];
 }
 
-- (void)showAuthenticationDialog:(CDVInvokedUrlCommand *)command
+- (void)showAuthenticationDialog:(CDVInvokedUrlCommand *)command __unused
 {
     DLog(@"");
 
@@ -186,33 +180,14 @@
     [JREngage showAuthenticationDialog];
 }
 
-- (void)showAuthenticationDialogForProvider:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
-{
-    DLog(@"");
-    
-    self.callbackID = [arguments pop];
-    NSString *provider;
-    if ([arguments count])
-        provider = [arguments objectAtIndex:0];
-    else
-    {
-        [self finishWithFailureMessage:[self stringFromCode:JRMissingAppIdError
-                                                 andMessage:@"Missing provider in call to initialize"]];
-        
-        return;
-    }
-    
-    [JREngage showAuthenticationDialogForProvider:provider];
-}
-
-- (void)showSharingDialog:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void)showSharingDialog:(CDVInvokedUrlCommand *)command __unused
 {
     DLog(@"");
 
-    self.callbackID = [arguments pop];
+    self.callbackID = command.callbackId;
     self.shareInProgress = YES;
 
-    NSDictionary *activity = [arguments objectAtIndex:0];
+    NSDictionary *activity = [command.arguments objectAtIndex:0];
     if (!activity)
     {
         [self finishWithFailureMessage:[self stringFromCode:JRPublishErrorActivityNil
@@ -278,7 +253,7 @@
     {
         self.fullAuthenticationResponse = [self authinfoResponseWithStuff:fullAuthenticationResponse
                                                                  tokenUrl:nil payloadString:nil];
-        NSString *authResponseString = [self.fullAuthenticationResponse cdvjk_JSONString];
+        NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
 
         if (self.shareInProgress)
             [self saveAuthenticationBlob];
@@ -313,7 +288,7 @@
                                                              tokenUrl:tokenUrl
                                                         payloadString:payloadString];
 
-    NSString *authResponseString = [self.fullAuthenticationResponse cdvjk_JSONString];
+    NSString *authResponseString = [self.fullAuthenticationResponse JSONString];
 
     if (self.shareInProgress)
         [self saveAuthenticationBlob];
@@ -364,7 +339,7 @@
     if (shareBlobs)
         [fullSharingResponse setObject:shareBlobs forKey:@"shares"];
 
-    [self finishWithSuccessMessage:[fullSharingResponse cdvjk_JSONString]];
+    [self finishWithSuccessMessage:[fullSharingResponse JSONString]];
 }
 
 - (void)sharingDidNotComplete

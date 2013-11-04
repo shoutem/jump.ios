@@ -28,10 +28,49 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
- #import <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
+
+#define cJRCurrentProvider  @"simpleCaptureDemo.currentProvider"
+#define cJRCaptureUser      @"simpleCaptureDemo.captureUser"
+
+@class AppDelegate;
+@class JRCaptureUser;
+
+AppDelegate *appDelegate;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 
+@property(strong) NSUserDefaults *prefs;
+@property(strong) JRCaptureUser *captureUser;
+@property BOOL isNotYetCreated;
+@property(strong) NSString *currentProvider;
+@property(nonatomic, strong) NSString *captureClientId;
+@property(nonatomic, strong) NSString *captureDomain;
+@property(nonatomic, strong) NSString *captureLocale;
+@property(nonatomic, strong) NSString *captureFlowName;
+@property(nonatomic, strong) NSString *captureTraditionalSignInFormName;
+@property(nonatomic) BOOL captureEnableThinRegistration;
+@property(nonatomic, strong) NSString *captureFlowVersion;
+@property(nonatomic, strong) NSString *captureTraditionalRegistrationFormName;
+@property(nonatomic, strong) NSString *captureSocialRegistrationFormName;
+@property(nonatomic, strong) NSString *captureAppId;
+@property(nonatomic, strong) NSString *engageAppId;
+@property(nonatomic, strong) NSString *bpBusUrlString;
+
+@property(nonatomic, strong) NSString *lfToken;
+@property(nonatomic, strong) NSString *bpChannelUrl;
+@property(nonatomic, strong) NSString *liveFyreNetwork;
+@property(nonatomic, strong) NSString *liveFyreSiteId;
+@property(nonatomic, strong) NSString *liveFyreArticleId;
+
+
+@property(nonatomic, retain) NSString *registrationToken;
+
+@property(nonatomic, strong) NSDictionary *customProviders;
+
+@property(nonatomic, retain) NSString *captureForgottenPasswordFormName;
+
+- (void)saveCaptureUser;
 @end

@@ -71,7 +71,7 @@
         infoButton.autoresizingMask = UIViewAutoresizingNone | UIViewAutoresizingFlexibleLeftMargin;
 
         [infoButton addTarget:self
-                       action:@selector(getInfo)
+                       action:@selector(showInfo:)
              forControlEvents:UIControlEventTouchUpInside];
 
         if (iPad)
@@ -90,7 +90,7 @@
         loadingLabel.backgroundColor = [UIColor clearColor];
         loadingLabel.font = [UIFont systemFontOfSize:(iPad) ? 30.0 : 13.0];
         loadingLabel.textColor = [UIColor whiteColor];
-        loadingLabel.textAlignment = UITextAlignmentLeft;
+        loadingLabel.textAlignment = JR_TEXT_ALIGN_LEFT;
         loadingLabel.autoresizingMask = UIViewAutoresizingNone | UIViewAutoresizingFlexibleRightMargin;
         loadingLabel.text = @"Loading...";
 
@@ -135,29 +135,33 @@
     }
 }
 
-- (void)getInfo
+- (void)showInfo:(id <UIActionSheetDelegate>)delegate
+{
+    [[JRInfoBar getInfoSheet:self] showInView:self.superview];
+}
+
++ (UIActionSheet *)getInfoSheet:(id <UIActionSheetDelegate>)delegate
 {
     DLog(@"");
 
     NSDictionary *infoPlist = [NSDictionary dictionaryWithContentsOfFile:
-                               [[[NSBundle mainBundle] resourcePath]
-                                stringByAppendingPathComponent:@"/JREngage-Info.plist"]];
+                                                    [[[NSBundle mainBundle] resourcePath]
+                                                            stringByAppendingPathComponent:@"/JREngage-Info.plist"]];
 
+    // todo don't use this key, since this isn't actually a CFBundleShortVersionString value, it's just a string we
+    // stick a Janrain release version number in.
     NSString *version = [infoPlist objectForKey:@"CFBundleShortVersionString"];
 
-    /* So long as I always number the versions v#.#.#, this will always trim the leading 'v', leaving just the numbers.
-       Also, if my script accidentally adds a trailing '\n', this gets trimmed too. */
-    version = [[version stringByTrimmingCharactersInSet:[NSCharacterSet lowercaseLetterCharacterSet]]
-                        stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    version = [version stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
-    UIActionSheet *action = [[[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:
-                                                                   @"Janrain Engage for iPhone Library\nVersion %@\nwww.janrain.com", version]
-                                                         delegate:self
-                                                cancelButtonTitle:@"OK"
-                                           destructiveButtonTitle:nil
-                                                otherButtonTitles:nil] autorelease];
-    action.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
-    [action showInView:self.superview];
+    NSString *verString = [NSString stringWithFormat:
+                                            @"Janrain Engage for iPhone Library\nVersion %@\nwww.janrain.com", version];
+    UIActionSheet *actionSheet = [[[UIActionSheet alloc] initWithTitle:verString
+                                                              delegate:delegate
+                                                     cancelButtonTitle:@"OK"
+                                                destructiveButtonTitle:nil otherButtonTitles:nil] autorelease];
+    actionSheet.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
+    return actionSheet;
 }
 
 - (void)startProgress
@@ -200,28 +204,6 @@
         [self setFrame:CGRectMake(self.frame.origin.x, y_origin_hidden, self.frame.size.width, self.frame.size.height)];
         [UIView commitAnimations];
     }
-}
-
-- (void)fadeIn
-{
-    [UIView beginAnimations:@"fade" context:nil];
-    [UIView setAnimationDuration:0.1];
-    [UIView setAnimationDelay:0.0];
-    poweredByLabel.alpha = 1.0;
-    infoButton.alpha = 1.0;
-    [UIView commitAnimations];
-}
-
-- (void)fadeOut
-{
-    [UIView beginAnimations:@"fade" context:nil];
-    [UIView setAnimationDuration:0.1];
-    [UIView setAnimationDelay:0.0];
-    poweredByLabel.alpha = 0.0;
-    infoButton.alpha = 0.0;
-    spinner.alpha = 0.0;
-    loadingLabel.alpha = 0.0;
-    [UIView commitAnimations];
 }
 
 - (void)dealloc

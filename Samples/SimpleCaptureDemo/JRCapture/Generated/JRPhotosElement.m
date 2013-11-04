@@ -46,24 +46,10 @@
 
 @implementation JRPhotosElement
 {
-    JRObjectId *_photosElementId;
     NSString *_type;
     NSString *_value;
 }
 @synthesize canBeUpdatedOnCapture;
-
-- (JRObjectId *)photosElementId
-{
-    return _photosElementId;
-}
-
-- (void)setPhotosElementId:(JRObjectId *)newPhotosElementId
-{
-    [self.dirtyPropertySet addObject:@"photosElementId"];
-
-    [_photosElementId autorelease];
-    _photosElementId = [newPhotosElementId copy];
-}
 
 - (NSString *)type
 {
@@ -114,8 +100,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:(self.photosElementId ? [NSNumber numberWithInteger:[self.photosElementId integerValue]] : [NSNull null])
-                   forKey:@"id"];
     [dictionary setObject:(self.type ? self.type : [NSNull null])
                    forKey:@"type"];
     [dictionary setObject:(self.value ? self.value : [NSNull null])
@@ -155,10 +139,6 @@
         photosElement.canBeUpdatedOnCapture = YES;
     }
 
-    photosElement.photosElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     photosElement.type =
         [dictionary objectForKey:@"type"] != [NSNull null] ? 
         [dictionary objectForKey:@"type"] : nil;
@@ -189,10 +169,6 @@
     self.canBeUpdatedOnCapture = YES;
     self.captureObjectPath = [NSString stringWithFormat:@"%@/%@#%d", capturePath, @"photos", [(NSNumber*)[dictionary objectForKey:@"id"] integerValue]];
 
-    self.photosElementId =
-        [dictionary objectForKey:@"id"] != [NSNull null] ? 
-        [NSNumber numberWithInteger:[(NSNumber*)[dictionary objectForKey:@"id"] integerValue]] : nil;
-
     self.type =
         [dictionary objectForKey:@"type"] != [NSNull null] ? 
         [dictionary objectForKey:@"type"] : nil;
@@ -206,7 +182,7 @@
 
 - (NSSet *)updatablePropertySet
 {
-    return [NSSet setWithObjects:@"photosElementId", @"type", @"value", nil];
+    return [NSSet setWithObjects:@"type", @"value", nil];
 }
 
 - (void)setAllPropertiesToDirty
@@ -290,7 +266,6 @@
     NSMutableDictionary *dictionary = 
         [NSMutableDictionary dictionaryWithCapacity:10];
 
-    [dictionary setObject:@"JRObjectId" forKey:@"photosElementId"];
     [dictionary setObject:@"NSString" forKey:@"type"];
     [dictionary setObject:@"NSString" forKey:@"value"];
 
@@ -299,7 +274,6 @@
 
 - (void)dealloc
 {
-    [_photosElementId release];
     [_type release];
     [_value release];
 

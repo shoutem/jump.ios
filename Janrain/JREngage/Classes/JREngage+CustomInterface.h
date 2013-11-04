@@ -104,6 +104,20 @@
 /*@}*/
 
 /**
+* @name Presenting View Controller
+* A key to explicitly specify which UIViewController from which the library will present its
+* modal view controllers when running on iPad
+*/
+/*@{*/
+/**
+ * Key for a \e UIViewController object that your application owns, which will be used to present the library's
+ * modal dialogs.
+*/
+#define kJRModalDialogPresentationViewController @"PresentingViewController"
+/*@}*/
+
+
+/**
  * @name Background Colors
  * Keys to specify the background color of the library's dialogs
  **/
@@ -321,7 +335,7 @@
  * If you want to customize the title that will appear over the table section displaying the social providers, you can
  * use the keys define #kJRProviderTableSectionHeaderTitleString or define #kJRProviderTableSectionHeaderView
  **/
-#define kJRCaptureConventionalSigninTitleString    @"Capture.ConventionalSignin.Title.String"
+#define kJRCaptureTraditionalSignInTitleString    @"Capture.ConventionalSignin.Title.String"
 
 /**
  * Key for the \e UIView object to be set as the title view of the Native Sign-in view.
@@ -331,12 +345,14 @@
  * If you want to customize the title view that will appear over the table section displaying the social providers,
  * you can use the keys define #kJRProviderTableSectionHeaderTitleString or define #kJRProviderTableSectionHeaderView
  **/
-#define kJRCaptureConventionalSigninTitleView      @"Capture.ConventionalSignin.Title.View"
+#define kJRCaptureTraditionalSignInTitleView      @"Capture.ConventionalSignin.Title.View"
 /*@}*/
 
+#define kJRCaptureConventionalSigninTitleView @"Capture.ConventionalSignin.Title.View"
+#define kJRCaptureConventionalSigninTitleString @"Capture.ConventionalSignin.Title.String"
 /**
  * @internal
  **/
-#define kJRCaptureConventionalSigninViewController @"Capture.ConventionalSignin.ViewController"
+#define kJRCaptureTraditionalSignInViewController @"Capture.ConventionalSignin.ViewController"
 /** @}*/
 

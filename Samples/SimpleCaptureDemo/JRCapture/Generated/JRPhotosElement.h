@@ -37,7 +37,6 @@
  * @brief A JRPhotosElement object
  **/
 @interface JRPhotosElement : JRCaptureObject
-@property (nonatomic, readonly) JRObjectId *photosElementId; /**< Simple identifier for this sub-entity @note The \e id of the object should not be set. */ 
 @property (nonatomic, copy)     NSString *type; /**< The object's \e type property */ 
 @property (nonatomic, copy)     NSString *value; /**< The object's \e value property */ 
 

@@ -31,22 +31,25 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol JRConnectionManagerDelegate;
+@class JRCaptureUser;
+
 /**
  * @file
  * @defgroup captureErrors Capture Errors
  *
  * Capture-related error codes and explanations that you may receive through the delegate methods of the
- * JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureSigninDelegate protocols.
+ * JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureDelegate protocols.
  *
  * @{
  **/
 
-
+NSString *const kJRCaptureErrorDomain;
 #define GENERIC_ERROR_RANGE 1000
 #define LOCAL_APID_ERROR_RANGE 2000
 #define APID_ERROR_RANGE 3000
 #define CAPTURE_WRAPPED_ENGAGE_ERROR_RANGE 4000
-#define CAPTURE_WRAPPED_WEBVIEW_ERROR_RANGE 5000
+#define LOCAL_CAPTURE_ERROR_RANGE 5000
 
 /**
  * Generic Capture errors
@@ -58,7 +61,7 @@ typedef enum
 } JRCaptureGenericError;
 
 /**
- * Errors received from the JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureSigninDelegate protocols
+ * Errors received from the JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureDelegate protocols
  * when they fail locally
  **/
 typedef enum
@@ -67,6 +70,7 @@ typedef enum
     JRCaptureLocalApidErrorInvalidArrayElement  = JRCaptureLocalApidErrorGeneric + 101, /**< Error returned when an object or its parent is an element of an array, and the array needs to be replaced on Capture first. @sa JRCaptureObject#canBeUpdatedOnCapture */
     JRCaptureLocalApidErrorUrlConnection        = JRCaptureLocalApidErrorGeneric + 201, /**< Error returned when a URL connection could not be established */
     JRCaptureLocalApidErrorConnectionDidFail    = JRCaptureLocalApidErrorGeneric + 202, /**< Error returned when a URL connection failed */
+    JRCaptureLocalApidErrorInvalidArgument      = JRCaptureLocalApidErrorGeneric + 203, /**< Error returned when an invalid parameter has been passed to a Capture method */
     JRCaptureLocalApidErrorInvalidResultClass   = JRCaptureLocalApidErrorGeneric + 301, /**< Error returned when the JSON returned by Capture wasn't the expected structure (e.g., a string when expecting a plural) */
     JRCaptureLocalApidErrorInvalidResultStat    = JRCaptureLocalApidErrorGeneric + 302, /**< Error returned when the stat returned by Capture is missing or something unexpected */
     JRCaptureLocalApidErrorInvalidResultData    = JRCaptureLocalApidErrorGeneric + 303, /**< Error returned when the data returned by Capture was unexpected or incorrect */
@@ -75,7 +79,16 @@ typedef enum
 } JRCaptureLocalApidError;
 
 /**
- * Errors received from the JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureSigninDelegate protocols
+ * Local Capture client errors which are not apid specific
+ */
+typedef enum
+{
+    JRCaptureLocalErrorGeneric = LOCAL_CAPTURE_ERROR_RANGE,
+    JRCaptureLocalErrorInvalidInternalState = JRCaptureLocalErrorGeneric + 101, /**< The internal Capture client state has become corrupted */
+} JRCaptureLocalError;
+
+/**
+ * Errors received from the JRCaptureObjectDelegate, JRCaptureUserDelegate, and JRCaptureDelegate protocols
  * when they fail on the Capture server. These errors correspond to the errors listed on the
  * <a href="http://developers.janrain.com/documentation/capture/api-use-and-error-codes/">
  *     Capture RESTful API Documentation Page</a>
@@ -103,6 +116,8 @@ typedef enum
     JRCaptureApidErrorUniqueViolation          = JRCaptureApidErrorGeneric + 361, /**< Error returned when a unique or locally-unique constraint was violated */
     JRCaptureApidErrorMissingRequiredAttribute = JRCaptureApidErrorGeneric + 362, /**< Error returned when an attribute with the required constraint was either missing or set to null */
     JRCaptureApidErrorLengthViolation          = JRCaptureApidErrorGeneric + 363, /**< Error returned when a string value violated an attribute’s length constraint */
+    JRCaptureApidErrorEmailAddressInUse        = JRCaptureApidErrorGeneric + 380, /**< Error returned when thin registration fails because the email address is already in use */
+    JRCaptureApidErrorFormValidation           = JRCaptureApidErrorGeneric + 390, /**< Error returned when thin registration fails because the email address is already in use */
     JRCaptureApidErrorInvalidClientCredentials = JRCaptureApidErrorGeneric + 402, /**< Error returned when the client id does not exist or the client secret was wrong */
     JRCaptureApidErrorClientPermissionError    = JRCaptureApidErrorGeneric + 403, /**< Error returned when the client does not have permission to perform the action; needs a feature */
     JRCaptureApidErrorAccessTokenExpired       = JRCaptureApidErrorGeneric + 414, /**< Error returned when the supplied \c access_token has expired */
@@ -116,26 +131,78 @@ typedef enum
 } JRCaptureApidError;
 
 /**
- * Generic errors received from the JRCaptureSigninDelegate protocols when sign-in through Engage fails
+ * Generic errors received from the JRCaptureDelegate protocols when sign-in through Engage fails
  **/
 typedef enum
 {
-    JRCaptureWrappedEngageErrorGeneric                = CAPTURE_WRAPPED_ENGAGE_ERROR_RANGE,       /**< Generic error */
-    JRCaptureWrappedEngageErrorInvalidEndpointPayload = JRCaptureWrappedEngageErrorGeneric + 100, /**< Capture Mobile Endpoint URL payload is invalid */
+    /**
+    *
+    */
+    JRCaptureWrappedEngageErrorGeneric                = CAPTURE_WRAPPED_ENGAGE_ERROR_RANGE,
+
+    /**
+    * Malformed API request response
+    */
+    JRCaptureWrappedEngageErrorInvalidEndpointPayload = JRCaptureWrappedEngageErrorGeneric + 100
 } JRCaptureWrappedEngageError;
 
 /**
- * @internal (for now)
+ * NSError subclass for errors from the Capture library
  **/
-typedef enum
-{
-    JRCaptureWebviewErrorGeneric = CAPTURE_WRAPPED_WEBVIEW_ERROR_RANGE,
-} JRCaptureWebviewError;
+@interface JRCaptureError : NSError
 
-/**
- * @internal (for now)
- **/
-@interface JRCaptureError : NSObject
-+ (NSError *)errorFromResult:(NSObject *)result;
+- (BOOL)isMergeFlowError;
+
++ (JRCaptureError *)connectionCreationErr:(NSURLRequest *)request forDelegate:(id <JRConnectionManagerDelegate>)delegate
+                                  withTag:(id)tag;
+
+- (NSString *)existingProvider;
+- (NSString *)conflictedProvider;
+
+- (NSString *)mergeToken;
+
+- (BOOL)isFormValidationError;
+
+- (id)validationFailureMessages;
 @end
 /** @}*/
+
+/**
+* @internal
+*/
+@interface JRCaptureError (JRCaptureError_Builders)
++ (JRCaptureError *)invalidArgumentErrorWithParameterName:(NSString *)parameterName;
++ (JRCaptureError *)invalidInternalStateErrorWithDescription:(NSString *)description;
++ (JRCaptureError *)errorFromResult:(NSDictionary *)result onProvider:(NSString *)onProvider
+                                                          engageToken:(NSString *)mergeToken;
++ (JRCaptureError *)invalidApiResponseErrorWithString:(NSString *)rawResponse;
++ (JRCaptureError *)invalidApiResponseErrorWithObject:(id)rawResponse;
+@end
+
+/**
+* @internal
+*/
+@interface JRCaptureError (JRCaptureError_Helpers)
++ (NSDictionary *)invalidClassErrorDictForResult:(NSObject *)result;
++ (NSDictionary *)invalidStatErrorDictForResult:(NSObject *)result;
++ (NSDictionary *)invalidDataErrorDictForResult:(NSObject *)result;
+
++ (NSDictionary *)invalidParameterErrorDictWithParam:(NSString *)param;
+@end
+
+/**
+* NSError class categories to help with use of JRCaptureError instances
+*/
+@interface NSError (JRCaptureError_Extensions)
+- (BOOL)isJRMergeFlowError;
+- (BOOL)isJRTwoStepRegFlowError;
+- (BOOL)isJRFormValidationError;
+- (NSString *)JRMergeFlowConflictedProvider __unused;
+- (NSString *)JRMergeFlowExistingProvider;
+- (NSString *)JRMergeToken;
+- (JRCaptureUser *)JRPreregistrationRecord;
+
+- (NSString *)JRSocialRegistrationToken;
+
+- (NSDictionary *)JRValidationFailureMessages;
+@end

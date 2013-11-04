@@ -71,6 +71,7 @@
 
 @property (nonatomic, copy)     NSString *aboutMe; /**< A general statement about the person. */ 
 @property (nonatomic, copy)     NSArray *accounts; /**< Describes an account held by this Contact, which MAY be on the Service Provider's service, or MAY be on a different service. @note This is an array of JRAccountsElement objects */ 
+@property (nonatomic, copy)     JRStringArray *activities; /**< Person's activities @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c activity */ 
 @property (nonatomic, copy)     NSArray *addresses; /**< A physical mailing address for this Contact. @note This is an array of JRAddressesElement objects */ 
 @property (nonatomic, copy)     JRDate *anniversary; /**< The wedding anniversary of this contact. @note A ::JRDate property is a property of type \ref typesTable "date" and a typedef of \e NSDate. The accepted format should be an ISO 8601 date string (e.g., <code>yyyy-MM-dd</code>) */ 
 @property (nonatomic, copy)     NSString *birthday; /**< The birthday of this contact. */ 
@@ -90,7 +91,7 @@
 @property (nonatomic, copy)     JRStringArray *heroes; /**< Person's favorite heroes. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c hero */ 
 @property (nonatomic, copy)     NSString *humor; /**< Person's thoughts on humor. */ 
 @property (nonatomic, copy)     NSArray *ims; /**< Instant messaging address for this Contact. @note This is an array of JRImsElement objects */ 
-@property (nonatomic, copy)     NSString *interestedInMeeting; /**< The object's \e interestedInMeeting property */ 
+@property (nonatomic, copy)     JRStringArray *interestedInMeeting; /**< The object's \e interestedInMeeting property @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c interest */ 
 @property (nonatomic, copy)     JRStringArray *interests; /**< Person's interests, hobbies or passions. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c interest */ 
 @property (nonatomic, copy)     JRStringArray *jobInterests; /**< Person's favorite jobs, or job interests and skills. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c jobInterest */ 
 @property (nonatomic, copy)     JRStringArray *languages; /**< The object's \e languages property @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c language */ 
@@ -115,13 +116,13 @@
 @property (nonatomic, copy)     JRStringArray *quotes; /**< Person's favorite quotes @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c quote */ 
 @property (nonatomic, copy)     NSString *relationshipStatus; /**< Person's relationship status. */ 
 @property (nonatomic, copy)     JRStringArray *relationships; /**< A bi-directionally asserted relationship type that was established between the user and this contact by the Service Provider. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c relationship */ 
-@property (nonatomic, copy)     NSString *religion; /**< Person's religion or religious views. */ 
+@property (nonatomic, copy)     NSString *religion; /**< Person's relgion or religious views. */ 
 @property (nonatomic, copy)     NSString *romance; /**< Person's comments about romance. */ 
 @property (nonatomic, copy)     NSString *scaredOf; /**< What the person is scared of. */ 
 @property (nonatomic, copy)     NSString *sexualOrientation; /**< Person's sexual orientation. */ 
 @property (nonatomic, copy)     NSString *smoker; /**< Person's smoking status. */ 
 @property (nonatomic, copy)     JRStringArray *sports; /**< Person's favorite sports @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c sport */ 
-@property (nonatomic, copy)     NSString *status; /**< Person's status, headline or shout-out. */ 
+@property (nonatomic, copy)     NSString *status; /**< Person's status, headline or shoutout. */ 
 @property (nonatomic, copy)     JRStringArray *tags; /**< A user-defined category or label for this contact. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c tag */ 
 @property (nonatomic, copy)     JRStringArray *turnOffs; /**< Person's turn offs. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c turnOff */ 
 @property (nonatomic, copy)     JRStringArray *turnOns; /**< Person's turn ons. @note  A ::JRStringArray property is a plural (array) that holds a list of \e NSStrings. As it is an array, it is therefore a typedef of \e NSArray. This array of \c NSStrings represents a list of \c turnOn */ 
@@ -201,6 +202,52 @@
  * The JRAccountsElement#canBeUpdatedOnCapture property will let you know if you can do this.
  **/
 - (void)replaceAccountsArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context;
+
+/**
+ * Use this method to replace the JRProfile#activities array on Capture after adding, removing,
+ * or reordering elements. You should call this method immediately after you perform any of these actions.
+ * This method will replace the entire array on Capture, including all of its elements and their sub-arrays and
+ * sub-objects. When successful, the new array will be added to the JRProfile#activities property,
+ * replacing the existing NSArray.
+ *
+ * If the array is replaced successfully, the method JRCaptureObjectDelegate#replaceArrayDidSucceedForObject:newArray:named:context:
+ * will be called on your delegate. This method will return a pointer to the new array, which is also the same pointer
+ * stored in the JRProfile#activities property, and the name of the replaced array: \c "activities".
+ *
+ * If unsuccessful, the method JRCaptureObjectDelegate#replaceArrayDidFailForObject:arrayNamed:withError:context:
+ * will be called on your delegate.
+ *
+ * @param delegate
+ *   The JRCaptureObjectDelegate that implements the optional delegate methods JRCaptureObjectDelegate#replaceArrayDidSucceedForObject:newArray:named:context:
+ *   and JRCaptureObjectDelegate#replaceArrayDidFailForObject:arrayNamed:withError:context:.
+ *
+ * @param context
+ *   Any NSObject that you would like to send through the asynchronous network call back to your delegate, or \c nil.
+ *   This object will be passed back to your JRCaptureObjectDelegate as is. Contexts are used across most of the
+ *   asynchronous Capture methods to facilitate correlation of the response messages with the calling code. Use of the
+ *   context is entirely optional and at your discretion.
+ *
+ * @warning
+ * When successful, the new array will be added to the JRProfile#activities property,
+ * replacing the existing NSArray. The new array will contain new, but equivalent JRActivitiesElement
+ * objects. That is to say, the elements will be the same, but they will have new pointers. You should not hold onto
+ * any references to the JRProfile#activities or JRActivitiesElement objects
+ * when you are replacing this array on Capture, as the pointers will become invalid.
+ * 
+ * @note
+ * After the array has been replaced on Capture, you can now call JRActivitiesElement#updateOnCaptureForDelegate:context:()
+ * on the array's elements. You can check the JRActivitiesElement#canBeUpdatedOnCapture property to determine
+ * if an element can be updated or not. If the JRActivitiesElement#canBeUpdatedOnCapture property is equal
+ * to \c NO you should replace the JRProfile#activities array on Capture. Replacing the array will also
+ * update any local changes to the properties of a JRActivitiesElement, including sub-arrays and sub-objects.
+ *
+ * @par
+ * If you haven't added, removed, or reordered any of the elements of the JRProfile#activities array, but
+ * you have locally updated the properties of a JRActivitiesElement, you can just call
+ * JRActivitiesElement#updateOnCaptureForDelegate:context:() to update the local changes on the Capture server.
+ * The JRActivitiesElement#canBeUpdatedOnCapture property will let you know if you can do this.
+ **/
+- (void)replaceActivitiesArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context;
 
 /**
  * Use this method to replace the JRProfile#addresses array on Capture after adding, removing,
@@ -569,6 +616,52 @@
  * The JRImsElement#canBeUpdatedOnCapture property will let you know if you can do this.
  **/
 - (void)replaceImsArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context;
+
+/**
+ * Use this method to replace the JRProfile#interestedInMeeting array on Capture after adding, removing,
+ * or reordering elements. You should call this method immediately after you perform any of these actions.
+ * This method will replace the entire array on Capture, including all of its elements and their sub-arrays and
+ * sub-objects. When successful, the new array will be added to the JRProfile#interestedInMeeting property,
+ * replacing the existing NSArray.
+ *
+ * If the array is replaced successfully, the method JRCaptureObjectDelegate#replaceArrayDidSucceedForObject:newArray:named:context:
+ * will be called on your delegate. This method will return a pointer to the new array, which is also the same pointer
+ * stored in the JRProfile#interestedInMeeting property, and the name of the replaced array: \c "interestedInMeeting".
+ *
+ * If unsuccessful, the method JRCaptureObjectDelegate#replaceArrayDidFailForObject:arrayNamed:withError:context:
+ * will be called on your delegate.
+ *
+ * @param delegate
+ *   The JRCaptureObjectDelegate that implements the optional delegate methods JRCaptureObjectDelegate#replaceArrayDidSucceedForObject:newArray:named:context:
+ *   and JRCaptureObjectDelegate#replaceArrayDidFailForObject:arrayNamed:withError:context:.
+ *
+ * @param context
+ *   Any NSObject that you would like to send through the asynchronous network call back to your delegate, or \c nil.
+ *   This object will be passed back to your JRCaptureObjectDelegate as is. Contexts are used across most of the
+ *   asynchronous Capture methods to facilitate correlation of the response messages with the calling code. Use of the
+ *   context is entirely optional and at your discretion.
+ *
+ * @warning
+ * When successful, the new array will be added to the JRProfile#interestedInMeeting property,
+ * replacing the existing NSArray. The new array will contain new, but equivalent JRInterestedInMeetingElement
+ * objects. That is to say, the elements will be the same, but they will have new pointers. You should not hold onto
+ * any references to the JRProfile#interestedInMeeting or JRInterestedInMeetingElement objects
+ * when you are replacing this array on Capture, as the pointers will become invalid.
+ * 
+ * @note
+ * After the array has been replaced on Capture, you can now call JRInterestedInMeetingElement#updateOnCaptureForDelegate:context:()
+ * on the array's elements. You can check the JRInterestedInMeetingElement#canBeUpdatedOnCapture property to determine
+ * if an element can be updated or not. If the JRInterestedInMeetingElement#canBeUpdatedOnCapture property is equal
+ * to \c NO you should replace the JRProfile#interestedInMeeting array on Capture. Replacing the array will also
+ * update any local changes to the properties of a JRInterestedInMeetingElement, including sub-arrays and sub-objects.
+ *
+ * @par
+ * If you haven't added, removed, or reordered any of the elements of the JRProfile#interestedInMeeting array, but
+ * you have locally updated the properties of a JRInterestedInMeetingElement, you can just call
+ * JRInterestedInMeetingElement#updateOnCaptureForDelegate:context:() to update the local changes on the Capture server.
+ * The JRInterestedInMeetingElement#canBeUpdatedOnCapture property will let you know if you can do this.
+ **/
+- (void)replaceInterestedInMeetingArrayOnCaptureForDelegate:(id<JRCaptureObjectDelegate>)delegate context:(NSObject *)context;
 
 /**
  * Use this method to replace the JRProfile#interests array on Capture after adding, removing,
@@ -1475,6 +1568,7 @@
  * This method recursively checks all of the sub-objects of JRProfile
  * but does not check any of the arrays of the JRProfile or the arrays' elements:
  *   - JRProfile#accounts, JRAccountsElement
+ *   - JRProfile#activities, JRActivitiesElement
  *   - JRProfile#addresses, JRAddressesElement
  *   - JRProfile#books, JRBooksElement
  *   - JRProfile#cars, JRCarsElement
@@ -1483,6 +1577,7 @@
  *   - JRProfile#food, JRFoodElement
  *   - JRProfile#heroes, JRHeroesElement
  *   - JRProfile#ims, JRImsElement
+ *   - JRProfile#interestedInMeeting, JRInterestedInMeetingElement
  *   - JRProfile#interests, JRInterestsElement
  *   - JRProfile#jobInterests, JRJobInterestsElement
  *   - JRProfile#languages, JRLanguagesElement
@@ -1506,6 +1601,7 @@
  * @par
  * If you have added or removed any elements from the arrays, you must call the following methods
  * to update the array on Capture: replaceAccountsArrayOnCaptureForDelegate:context:(),
+ *   replaceActivitiesArrayOnCaptureForDelegate:context:(),
  *   replaceAddressesArrayOnCaptureForDelegate:context:(),
  *   replaceBooksArrayOnCaptureForDelegate:context:(),
  *   replaceCarsArrayOnCaptureForDelegate:context:(),
@@ -1514,6 +1610,7 @@
  *   replaceFoodArrayOnCaptureForDelegate:context:(),
  *   replaceHeroesArrayOnCaptureForDelegate:context:(),
  *   replaceImsArrayOnCaptureForDelegate:context:(),
+ *   replaceInterestedInMeetingArrayOnCaptureForDelegate:context:(),
  *   replaceInterestsArrayOnCaptureForDelegate:context:(),
  *   replaceJobInterestsArrayOnCaptureForDelegate:context:(),
  *   replaceLanguagesArrayOnCaptureForDelegate:context:(),

@@ -37,37 +37,43 @@
 #import <UIKit/UIKit.h>
 
 @interface NSString (JRString_UrlEscaping)
-- (NSString*)stringByAddingUrlPercentEscapes;
+- (NSString *)stringByAddingUrlPercentEscapes;
 @end
 
 @protocol JRConnectionManagerDelegate <NSObject>
 @optional
-- (void)connectionDidFinishLoadingWithPayload:(NSString*)payload request:(NSURLRequest*)request andTag:(id)userdata;
-- (void)connectionDidFinishLoadingWithFullResponse:(NSURLResponse*)fullResponse
-                                  unencodedPayload:(NSData*)payload
-                                           request:(NSURLRequest*)request
-                                            andTag:(id)userdata;
-- (void)connectionDidFailWithError:(NSError*)error request:(NSURLRequest*)request andTag:(id)userdata;
-- (void)connectionWasStoppedWithTag:(id)userdata;
+- (void)connectionDidFinishLoadingWithPayload:(NSString *)payload request:(NSURLRequest *)request andTag:(id)userData;
+
+- (void)connectionDidFinishLoadingWithFullResponse:(NSURLResponse *)fullResponse
+                                  unencodedPayload:(NSData *)payload
+                                           request:(NSURLRequest *)request
+                                            andTag:(id)userData;
+
+- (void)connectionDidFailWithError:(NSError *)error request:(NSURLRequest *)request andTag:(id)userData;
+
+- (void)connectionWasStoppedWithTag:(id)userData;
 @end
 
-@interface JRConnectionManager : NSObject
+@interface JRConnectionManager : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 {
     CFMutableDictionaryRef connectionBuffers;
 }
 
 @property CFMutableDictionaryRef connectionBuffers;
 
-+ (bool)createConnectionFromRequest:(NSURLRequest*)request
-                        forDelegate:(id<JRConnectionManagerDelegate>)delegate
-                            withTag:(id)userdata;
++ (bool)createConnectionFromRequest:(NSURLRequest *)request
+                        forDelegate:(id <JRConnectionManagerDelegate>)delegate
+                            withTag:(id)userData;
 
-+ (bool)createConnectionFromRequest:(NSURLRequest*)request
-                        forDelegate:(id<JRConnectionManagerDelegate>)delegate
++ (bool)createConnectionFromRequest:(NSURLRequest *)request
+                        forDelegate:(id <JRConnectionManagerDelegate>)delegate
                  returnFullResponse:(BOOL)returnFullResponse
-                            withTag:(id)userdata;
+                            withTag:(id)userData;
 
-+ (void)stopConnectionsForDelegate:(id<JRConnectionManagerDelegate>)delegate;
++ (void)stopConnectionsForDelegate:(id <JRConnectionManagerDelegate>)delegate;
 
 + (NSUInteger)openConnections;
+
++ (void)jsonRequestToUrl:(NSString *)url params:(NSDictionary *)params
+       completionHandler:(void (^)(id, NSError *))handler;
 @end

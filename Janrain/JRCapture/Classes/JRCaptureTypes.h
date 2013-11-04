@@ -28,6 +28,76 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define JRConventionalSigninNone JRTraditionalSignInNone
+#define JRConventionalSigninEmailPassword JRTraditionalSignInEmailPassword
+#define JRConventionalSigninUsernamePassword JRTraditionalSignInUsernamePassword
+#define JRConventionalSigninType JRTraditionalSignInType
+
+#define JRConventionalSignInEmailPassword JRTraditionalSignInEmailPassword
+#define JRConventionalSignInUsernamePassword JRTraditionalSignInUsernamePassword
+#define JRConventionalSignInNone JRTraditionalSignInNone
+#define JRConventionalSignInType JRTraditionalSignInType
+
+
+/**
+ * Indicates the type of the user record as an argument to your
+ * JRCaptureDelegate#captureAuthenticationDidSucceedForUser:status: delegate method.
+ *
+ * There are three possible values for \c captureRecordStatus, indicating the creation state of the record.
+ *
+ * During Capture authentication, if authenticating through the Engage for iOS portion of the library, the library
+ * automatically posts the authentication token to the Capture server. Capture will attempt to sign the user in,
+ * using the rich data available from the social identity provider.  One of three results will occur:
+ *     - Returning User — The user’s record already exists on the Capture server. The record is retrieved from the
+ *       Capture server and passed back to your application.
+ *     - New User, Record Automatically Created — The user’s record does not already exist on the Capture server, but
+ *       it is automatically created and passed back to your application.  Your application may wish to collect
+ *       additional information about the user and push that information back to the Capture server.
+ *     - New User, Record Not Automatically Created* — The user’s record was not automatically created, either because
+ *       required information was not available in the data returned by the social identity provider, or because auto-
+ *       creation was disabled.
+ **/
+typedef enum
+{
+/**
+ * Indicates that this is a new user and that a new Capture record has already been
+ * automatically created. Your application may wish to collect additional new-user information and push that
+ * information back to the Capture server
+ **/
+ JRCaptureRecordNewlyCreated,          /* now it exists, and it is new */
+
+/**
+ * Indicates that the user had an existing Capture record and that record has been retrieved.
+ * Your application should update its state to reflect the user being signed-in
+ **/
+ JRCaptureRecordExists,                /* already created, not new */
+} JRCaptureRecordStatus;
+
+/**
+ * Indicates the kind of traditional sign-in to be used.
+ **/
+typedef enum
+{
+/**
+ * No traditional login dialog added
+ **/
+ JRTraditionalSignInNone = 0,
+
+/**
+ * Traditional login dialog added prompting the user for their username and
+ * password combination. Use this if your Capture instance is set up to accept a \c username argument when signing in
+ * directly to your server
+ **/
+            JRTraditionalSignInUsernamePassword,
+
+/**
+ * Traditional login dialog added prompting the user for their email and password
+ * combination. Use this if your Capture instance is set up to accept a \c email argument when signing in
+ * directly to your server
+ **/
+            JRTraditionalSignInEmailPassword
+} JRTraditionalSignInType;
+
 /**
  * @file
  * Types used by the library's generated Capture user model
@@ -62,7 +132,8 @@
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSNumber JRBoolean;
+//typedef NSNumber JRBoolean;
+#define JRBoolean NSNumber
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a \e decimal on Capture is more or
@@ -81,7 +152,8 @@ typedef NSNumber JRBoolean;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSNumber JRDecimal;
+//typedef NSNumber JRDecimal;
+#define JRDecimal NSNumber
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a \e integer on Capture can hold
@@ -113,7 +185,8 @@ typedef NSNumber JRDecimal;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSNumber JRInteger;
+//typedef NSNumber JRInteger;
+#define JRInteger NSNumber
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e date on Capture
@@ -138,7 +211,8 @@ typedef NSNumber JRInteger;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSDate   JRDate;
+//typedef NSDate   JRDate;
+#define JRDate NSDate
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e dateTime on
@@ -164,7 +238,8 @@ typedef NSDate   JRDate;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSDate   JRDateTime;
+//typedef NSDate   JRDateTime;
+#define JRDateTime NSDate
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e ipAddress on
@@ -183,7 +258,8 @@ typedef NSDate   JRDateTime;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSString JRIpAddress;
+//typedef NSString JRIpAddress;
+#define JRIpAddress NSString
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e password on
@@ -202,7 +278,8 @@ typedef NSString JRIpAddress;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSObject JRPassword;
+//typedef NSObject JRPassword;
+#define JRPassword NSObject
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e json on
@@ -231,7 +308,8 @@ typedef NSObject JRPassword;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSObject JRJsonObject;
+//typedef NSObject JRJsonObject;
+#define JRJsonObject NSObject
 
 /**
  * Plurals contain collections of elements, where an element is just an object stored in a plural. Like objects, plural
@@ -264,7 +342,8 @@ typedef NSObject JRJsonObject;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page"
  **/
-typedef NSArray  JRStringArray;
+//typedef NSArray  JRStringArray;
+#define JRStringArray NSArray
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e uuid on
@@ -274,7 +353,8 @@ typedef NSArray  JRStringArray;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSString JRUuid;
+//typedef NSString JRUuid;
+#define JRUuid NSString
 
 /**
  * Some types do not perfectly map between Objective-C and Capture. For example, a property of type \e id on
@@ -287,7 +367,8 @@ typedef NSString JRUuid;
  * @sa
  *   For more information, please see the \ref typesTable "Type Mapping Reference Page".
  **/
-typedef NSNumber JRObjectId;
+//typedef NSNumber JRObjectId;
+#define JRObjectId NSNumber
 
 /**
  * @page Types Mapping Reference

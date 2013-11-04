@@ -38,7 +38,6 @@
  * @brief Describes a current or past organizational affiliation of this contact.
  **/
 @interface JROrganizationsElement : JRCaptureObject
-@property (nonatomic, readonly) JRObjectId *organizationsElementId; /**< Simple identifier for this sub-entity @note The \e id of the object should not be set. */ 
 @property (nonatomic, copy)     NSString *department; /**< The department within this organization. */ 
 @property (nonatomic, copy)     NSString *description; /**< A textual description of the role this Contact played in this organization. */ 
 @property (nonatomic, copy)     NSString *endDate; /**< The date this Contact left this organization or the role specified by title within this organization. */ 

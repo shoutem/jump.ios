@@ -33,42 +33,14 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #import <UIKit/UIKit.h>
-#import "JRUserInterfaceMaestro.h"
-#import "JRSessionData.h"
-
-@class JRInfoBar;
-@class JRSessionData;
-//@class JRUserInterfaceMaestro;
-
 @interface JRProvidersController : UIViewController <UINavigationBarDelegate, UITableViewDelegate,
-                                                        UITableViewDataSource, UIAlertViewDelegate,
-                                                        JRUserInterfaceDelegate, JRExternalDialogControllerDelegate>
-{
-    JRSessionData   *sessionData;
-    NSDictionary    *customInterface;
+        UITableViewDataSource, UIAlertViewDelegate, JRUserInterfaceDelegate, JRExternalDialogControllerDelegate>
+@property(assign) BOOL hidesCancelButton;
+@property(nonatomic, retain) IBOutlet UIView *myBackgroundView;
+@property(nonatomic, retain) IBOutlet UITableView *myTableView;
+@property(nonatomic, retain) IBOutlet UILabel *myLoadingLabel;
+@property(nonatomic, retain) IBOutlet UIActivityIndicatorView *myActivitySpinner;
 
-    NSMutableArray  *providers;
-
-    BOOL iPad;
-    BOOL hidesCancelButton;
-//  BOOL userHitTheBackButton;
-
-    UIView      *titleView;
-    UIView      *myBackgroundView;
-    UITableView *myTableView;
-
- /* Activity Spinner and Label displayed while the list of configured providers is empty */
-    NSTimer *timer;
-    UILabel                 *myLoadingLabel;
-    UIActivityIndicatorView *myActivitySpinner;
-
-    JRInfoBar   *infoBar;
-}
-@property (assign) BOOL hidesCancelButton;
-@property (nonatomic, retain) IBOutlet UIView                   *myBackgroundView;
-@property (nonatomic, retain) IBOutlet UITableView              *myTableView;
-@property (nonatomic, retain) IBOutlet UILabel                  *myLoadingLabel;
-@property (nonatomic, retain) IBOutlet UIActivityIndicatorView  *myActivitySpinner;
-
-- (id)initWithNibName:(NSString*)nibNameOrNil bundle:(NSBundle*)nibBundleOrNil andCustomInterface:(NSDictionary*)theCustomInterface;
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+   andCustomInterface:(NSDictionary *)theCustomInterface;
 @end

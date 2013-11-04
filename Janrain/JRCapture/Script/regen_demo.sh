@@ -1,1 +1,1 @@
-./CaptureSchemaParser.pl -f ../../../Samples/SimpleCaptureDemo/sample_user.json -o ../../../Samples/SimpleCaptureDemo/JRCapture/
+./CaptureSchemaParser.pl -f simple_capture_demo_schema.json -o ../../../Samples/SimpleCaptureDemo/JRCapture/
