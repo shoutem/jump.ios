@@ -24,7 +24,9 @@ If you haven't already, clone the JUMP for iOS library from GitHub: `git clone g
    JRCapture project group from the Janrain project group.
 7. You must also add the **Security** framework, **QuartzCore** framework, and the **MessageUI** framework to your
    project. As the **MessageUI** framework is not available on all iOS devices and versions, you must designate the
-   framework as "optional."
+   framework as "optional." As of JUMP iOS v3.6 you must also add the **Accounts** framework and the **Social**
+   framework.
+8. Ensure that your deployment target is at least iOS 6 (This is required as of JUMP iOS v3.6.)
 
 ### Frameworks:
 
@@ -33,6 +35,19 @@ If you haven't already, clone the JUMP for iOS library from GitHub: `git clone g
 * QuartCore - This framework is used for animations when running on the iPad.
 * MessageUI - This framework is used to integrate with the iOS device's native SMS and email capabilities, to allow
   your end-user's to share your content via email or SMS.
+
+### Localization
+
+The JUMP SDK uses NSLocalizedString for all user-facing strings. String values are loaded from the ios_internal/Janrain/JREngage/Resources/en.lproj folder in the Localizable.strings file. Only English strings are provided in the SDK.  You can, however, provide your own translations:
+
+1. Create a folder in the ios_internal/Janrain/JREngage/Resources/ folder named for the language you are localizing to (for instance, for a French translation create fr.lproj) and in that folder add a new file named 'Localizable.strings'. 
+2. Copy the contents of ios_internal/Janrain/JREngage/Resources/en.lproj/Localizable.strings to your newly created fr.lproj/Localizable.strings file.
+3. Strings are formatted as "key":"value" pairs where the key is always the english version of the string and the value is the localized translation. For your French strings file, translate each "value", but do not edit the "key".
+4. Don't forget to add the file to the project.
+
+.nib, .xib, and .storyboard files can also be localized. However, there is only one such file in the JUMP SDK that is localizable: JRPublishActivityController.xib. To localize this file in your own project use XCode's "Use Base Internationalization" feature to select this file and the target language.  The output of this operation is a copy of JRPublishActivityController.xib in a subfolder of ./JREngage/Resources/xibs/ named with the language code of the target language.
+
+For a list of language codes, see http://xml.coverpages.org/iso639a.html or buy the ISO standard at http://www.iso.org/iso/catalogue_detail.htm?csnumber=4766.
 
 ## Generating the Capture User Model
 
@@ -80,16 +95,8 @@ Once generated, the user model must be added to your Xcode project:
 
 ## Working with ARC
 
-The JUMP for iOS library does not, itself, use Automatic Reference Counting, but you can add the library to a project
-that does by disabling ARC when compliling the JUMP library source code. To do so:
+As of v3.7.0 the JUMP iOS SDK uses ARC for object memory management.
 
-1. Go to your project settings, select your application’s target, and select the **Build Phases** tab.
-2. Expand the section named **Compile Sources**.
-3. Select all the files from the **Janrain** folder, including `SFHFKeychainUtils.m`
-   Also select the generated user model files, if you added them.
-4. Press **Return** to edit all the files at once, and, in the floating text-box, add the `-fno-objc-arc` compiler
-   flag.
-5. After adding the compiler flag, either click **Done** in the input bubble, or press Return.
 
 ## Upgrading from an Earlier Version of the JUMP SDK
 

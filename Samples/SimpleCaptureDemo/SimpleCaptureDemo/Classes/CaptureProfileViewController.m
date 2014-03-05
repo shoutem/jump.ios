@@ -42,8 +42,8 @@
 
 @interface CaptureProfileViewController () <UITextViewDelegate, UIAlertViewDelegate, JRCaptureUserDelegate,
         UITextFieldDelegate, JRCaptureDelegate>
-@property(nonatomic, retain) id firstResponder;
-@property(nonatomic, retain) NSDate *myBirthdate;
+@property(nonatomic) id firstResponder;
+@property(nonatomic) NSDate *myBirthdate;
 @end
 
 @implementation CaptureProfileViewController
@@ -75,6 +75,10 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+        [self setEdgesForExtendedLayout:UIRectEdgeNone];
+    }
 
     [myAboutMeTextView setInputAccessoryView:myKeyboardToolbar];
     [myEmailTextField setInputAccessoryView:myKeyboardToolbar];
@@ -208,10 +212,6 @@
     {
         [JRCapture registerNewUser:appDelegate.captureUser socialRegistrationToken:appDelegate.registrationToken
                        forDelegate:self];
-    }
-    else
-    {
-        [appDelegate.captureUser updateOnCaptureForDelegate:self context:nil];
     }
 
     self.myDoneButton.enabled = NO;

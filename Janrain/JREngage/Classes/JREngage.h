@@ -81,6 +81,8 @@
 #endif
 
 #import <Foundation/Foundation.h>
+#import "JRNativeAuthConfig.h"
+
 @class JRActivityObject;
 
 /**
@@ -221,7 +223,10 @@
  *   please see the \ref authenticationProviders "List of Providers"
  **/
 - (void)authenticationCallToTokenUrl:(NSString *)tokenUrl didFailWithError:(NSError *)error forProvider:(NSString *)provider;
-/*@}*/
+/**
+ * Sent when the Engage Authentication is completed successfully for Link Account Flow
+ */
+- (void)engageAuthenticationDidSucceedForAccountLinking:(NSDictionary *)engageAuthInfo forProvider:(NSString *)provider;
 @end
 
 #define JREngageDelegate JREngageSigninDelegate
@@ -291,6 +296,12 @@
 @end
 
 /**
+ * Notification sent when the Engage configuration has been updated.
+ */
+extern NSString *const JRFinishedUpdatingEngageConfigurationNotification;
+extern NSString *const JRFailedToUpdateEngageConfigurationNotification;
+
+/**
  * @brief
  * Main API for interacting with the Janrain Engage for iOS library
  *
@@ -306,7 +317,7 @@
  * the token URL. Your server can complete authentication, access more of JREngage's API, log the authentication, etc.
  * and the server's response will be passed back through to your iOS application.
  **/
-@interface JREngage : NSObject
+@interface JREngage : NSObject <JRNativeAuthConfig>
 
 /**
  * @name Get the JREngage Instance
@@ -334,12 +345,36 @@
            andDelegate:(id <JREngageSigninDelegate>)delegate;
 
 /**
+ * Get the shared JREngage instance
+ */
++ (JREngage *)instance;
+
+/**
  * @deprecated
  * Use [JREngage setEngageAppId:TokenUrl:andDelegate] instead
  */
 + (JREngage *)jrEngageWithAppId:(NSString *)appId andTokenUrl:(NSString *)tokenUrl
                        delegate:(id <JREngageSigninDelegate>)delegate __attribute__((deprecated));
 /*@}*/
+
+/**
+ *  Set the Google+ client id for use with native Google+ SSO
+ *
+ *  @param clientId
+ *    Your google+ client id. Should be from the same Google+ app that is registered with Engage.
+ */
++ (void)setGooglePlusClientId:(NSString *)clientId;
+
+/**
+ *  Set the Twitter consumer key and secret. This is required for native Twitter SSO.
+ *  The values must match the values in your Engage Dashboard.
+ *
+ *  @param consumerKey
+ *    Your Twitter consumer key
+ *  @param consumerSecret
+ *    Your Twitter consumer secret
+ */
++ (void)setTwitterConsumerKey:(NSString *)consumerKey andSecret:(NSString *)consumerSecret;
 
 /**
  * @name Manage the Delegates
@@ -401,6 +436,25 @@
  **/
 + (void)showAuthenticationDialogWithCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides __unused;
 
+/**
+ * Use this function for linking an account. The JREngage library will pop up a modal dialog,
+ * configured with the given custom interface, and take the user through the sign-in process.
+ *
+ * @param customInterfaceOverrides
+ *   A dictionary of objects and properties, indexed by the set of
+ *   \link customInterface pre-defined custom interface keys\endlink,
+ *   to be used by the library to customize the look and feel of the user
+ *   interface and/or add a native login experience
+ * 
+ * @param linkAccount
+ *   A BOOL value indicating to consider this flow for Account Linking process.
+ *
+ * @note
+ * Any values specified in the \e customInterfaceOverrides dictionary will override the corresponding
+ * values specified the dictionary passed into the setCustomInterfaceDefaults:() method.
+ **/
++ (void)showAuthenticationDialogWithCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                           forAccountLinking:(BOOL)linkAccount __unused;
 /**
 * Use this function to begin authentication. The JREngage library will pop up a modal dialog, configured
 * with the given custom interface and skipping the list of providers, and take the user straight to the sign-in
@@ -549,6 +603,18 @@
 + (void)setCustomInterfaceDefaults:(NSDictionary *)customInterfaceDefaults __unused;
 /*@}*/
 + (void)setCustomProviders:(NSDictionary *)customProviders __unused;
+
+/**
+ * JREngage URL handler
+ */
++ (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation;
+
+/**
+ * JREngage application did become active handler
+ */
++ (void)applicationDidBecomeActive:(UIApplication *)application;
+
 @end
 
 /**

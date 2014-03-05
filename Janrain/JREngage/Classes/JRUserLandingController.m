@@ -38,9 +38,15 @@
 #import "JRUserInterfaceMaestro.h"
 #import "JRWebViewController.h"
 #import "debug_log.h"
+#import "JRNativeAuth.h"
+#import "JRNativeProvider.h"
 
 #define frame_w(a) a.frame.size.width
 #define frame_h(a) a.frame.size.height
+
+@interface JRUserLandingController ()
+@property (nonatomic) JRNativeProvider *nativeProvider;
+@end
 
 @implementation JRUserLandingController
 @synthesize myBackgroundView;
@@ -52,7 +58,7 @@
     if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
     {
         sessionData = [JRSessionData jrSessionData];
-        customInterface = [theCustomInterface retain];
+        customInterface = theCustomInterface;
 
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
             iPad = YES;
@@ -67,6 +73,10 @@
 {
     DLog(@"");
     [super viewDidLoad];
+
+    if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+        [self setEdgesForExtendedLayout:UIRectEdgeNone];
+    }
 
     myTableView.backgroundColor = [UIColor clearColor];
 
@@ -88,10 +98,10 @@
 
     if (!self.navigationController.navigationBar.backItem)
     {
-        UIBarButtonItem *cancelButton = [[[UIBarButtonItem alloc]
+        UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc]
                 initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                      target:sessionData
-                                     action:@selector(triggerAuthenticationDidCancel:)] autorelease];
+                                     action:@selector(triggerAuthenticationDidCancel:)];
 
         self.navigationItem.rightBarButtonItem = cancelButton;
         self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -107,7 +117,7 @@
 - (NSString *)customTitle
 {
     DLog(@"");
-    if (!sessionData.currentProvider.requiresInput) return @"Welcome Back!";
+    if (!sessionData.currentProvider.requiresInput) return NSLocalizedString(@"Welcome Back!", nil);
 
     return sessionData.currentProvider.shortText;
 }
@@ -197,13 +207,31 @@ enum
     TEXT_FIELD_TAG,
     SIGN_IN_BUTTON_TAG,
     BACK_TO_PROVIDERS_BUTTON_TAG,
-    BIG_SIGN_IN_BUTTON_TAG
+    BIG_SIGN_IN_BUTTON_TAG,
+    PROVIDER_NAME_LABEL_TAG,
+    FIRST_SUBVIEW_TAG,
 };
 
-#define LOGO_FRAME                      10,     10,     280,    65
-#define WELCOME_LABEL_FRAME             10,     90,     280,    25
-#define TEXT_FIELD_FRAME                10,     85,     280,    35
-#define BUTTON_SUBVIEW_FRAME            10,     130,    280,    40
+/*
+ * The following definitions are used to place subviews in the UITableViewCell.
+ * Positioning within a cell is absolute. Positioning of the subviews is dynamic
+ */
+//                                      X       Y       Width   Height
+
+#define CELL_FRAME                      10,     0,      300,    180
+
+//      FIRST SUBVIEW - logo + provider name
+#define FIRST_SUBVIEW_FRAME             10,     10,     280,    30
+#define LOGO_FRAME                      0,      0,       30,    30
+#define PROVIDERNAME_LABEL_FRAME        40,     0,      150,    30
+
+//      SECOND SUBVIEW - welcome + optional text box
+#define SECOND_SUBVIEW_FRAME            10,     75,     280,    25
+#define WELCOME_LABEL_FRAME             0,      0,      280,    25
+#define TEXT_FIELD_FRAME                0,      0,      280,    25
+
+//      THIRD SUBVIEW - buttons
+#define THIRD_SUBVIEW_FRAME             10,     125,    280,    40
 #define BIG_SIGN_IN_BUTTON_FRAME        0,      0,      280,    40
 #define BACK_TO_PROVIDERS_BUTTON_FRAME  0,      0,      135,    40
 #define SMALL_SIGN_IN_BUTTON_FRAME      145,    0,      135,    40
@@ -218,7 +246,7 @@ enum
     if (cell)
         return (UIImageView *) [cell.contentView viewWithTag:LOGO_TAG];
 
-    UIImageView *logo = [[[UIImageView alloc] initWithFrame:CGRectMake(LOGO_FRAME)] autorelease];
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(LOGO_FRAME)];
 
     logo.autoresizingMask = UIViewAutoresizingFlexibleRightMargin |
             UIViewAutoresizingFlexibleLeftMargin;
@@ -228,12 +256,44 @@ enum
     return logo;
 }
 
+- (UILabel *)getProviderNameLabel:(UITableViewCell *)cell
+{
+    if (cell)
+    {
+        return (UILabel *) [cell.contentView viewWithTag:PROVIDER_NAME_LABEL_TAG];
+    }
+
+    UILabel *providerNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(PROVIDERNAME_LABEL_FRAME)];
+
+    providerNameLabel.font = [UIFont boldSystemFontOfSize:24.0];
+
+    providerNameLabel.adjustsFontSizeToFitWidth = YES;
+    providerNameLabel.textColor = [UIColor blackColor];
+    providerNameLabel.backgroundColor = [UIColor clearColor];
+    providerNameLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin |
+            UIViewAutoresizingFlexibleLeftMargin;
+
+    providerNameLabel.tag = PROVIDER_NAME_LABEL_TAG;
+
+    NSString *providerName = [sessionData currentProvider].friendlyName;
+    NSString *nameWithCapital = [NSString stringWithFormat:@"%@%@",
+            [[providerName substringToIndex:1] capitalizedString],
+            [providerName substringFromIndex:1]];
+    providerNameLabel.text = nameWithCapital;
+    [providerNameLabel sizeToFit];
+    CGRect rect = CGRectMake(PROVIDERNAME_LABEL_FRAME);
+    CGRect newRect = CGRectMake(rect.origin.x, rect.origin.y, [providerNameLabel frame].size.width, rect.size.height);
+    [providerNameLabel setFrame:newRect];
+
+    return providerNameLabel;
+}
+
 - (UILabel *)getWelcomeLabel:(UITableViewCell *)cell
 {
     if (cell)
         return (UILabel *) [cell.contentView viewWithTag:WELCOME_LABEL_TAG];
 
-    UILabel *welcomeLabel = [[[UILabel alloc] initWithFrame:CGRectMake(WELCOME_LABEL_FRAME)] autorelease];
+    UILabel *welcomeLabel = [[UILabel alloc] initWithFrame:CGRectMake(WELCOME_LABEL_FRAME)];
 
     welcomeLabel.font = [UIFont boldSystemFontOfSize:20.0];
 
@@ -245,6 +305,9 @@ enum
 
     welcomeLabel.tag = WELCOME_LABEL_TAG;
 
+    welcomeLabel.text = [sessionData authenticatedUserForProvider:sessionData.currentProvider].welcomeString;
+    [welcomeLabel setTextAlignment:NSTextAlignmentCenter];
+
     return welcomeLabel;
 }
 
@@ -253,7 +316,7 @@ enum
     if (cell)
         return (UITextField *) [cell.contentView viewWithTag:TEXT_FIELD_TAG];
 
-    UITextField *textField = [[[UITextField alloc] initWithFrame:CGRectMake(TEXT_FIELD_FRAME)] autorelease];
+    UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(TEXT_FIELD_FRAME)];
 
     textField.font = [UIFont systemFontOfSize:15.0];
 
@@ -290,13 +353,13 @@ enum
     [signInButton setBackgroundImage:[UIImage imageNamed:@"button_iosblue_135x40.png"]
                             forState:UIControlStateNormal];
 
-    [signInButton setTitle:@"Sign In" forState:UIControlStateNormal];
+    [signInButton setTitle:NSLocalizedString(@"Sign In", nil) forState:UIControlStateNormal];
     [signInButton setTitleColor:[UIColor whiteColor]
                        forState:UIControlStateNormal];
     [signInButton setTitleShadowColor:[UIColor grayColor]
                              forState:UIControlStateNormal];
 
-    [signInButton.titleLabel setFont:[UIFont boldSystemFontOfSize:20.0]];
+    [signInButton.titleLabel setFont:[UIFont boldSystemFontOfSize:14.0]];
 
     [signInButton addTarget:self
                      action:@selector(signInButtonTouchUpInside:)
@@ -318,7 +381,7 @@ enum
     [backToProvidersButton setBackgroundImage:[UIImage imageNamed:@"button_black_135x40.png"]
                                      forState:UIControlStateNormal];
 
-    [backToProvidersButton setTitle:@"Switch Accounts" forState:UIControlStateNormal];
+    [backToProvidersButton setTitle:NSLocalizedString(@"Switch Accounts", nil) forState:UIControlStateNormal];
     [backToProvidersButton setTitleColor:[UIColor whiteColor]
                                 forState:UIControlStateNormal];
     [backToProvidersButton setTitleShadowColor:[UIColor grayColor]
@@ -346,13 +409,13 @@ enum
     [bigSignInButton setBackgroundImage:[UIImage imageNamed:@"button_iosblue_280x40.png"]
                                forState:UIControlStateNormal];
 
-    [bigSignInButton setTitle:@"Sign In" forState:UIControlStateNormal];
+    [bigSignInButton setTitle:NSLocalizedString(@"Sign In", nil) forState:UIControlStateNormal];
     [bigSignInButton setTitleColor:[UIColor whiteColor]
                           forState:UIControlStateNormal];
     [bigSignInButton setTitleShadowColor:[UIColor grayColor]
                                 forState:UIControlStateNormal];
 
-    [bigSignInButton.titleLabel setFont:[UIFont boldSystemFontOfSize:20.0]];
+    [bigSignInButton.titleLabel setFont:[UIFont boldSystemFontOfSize:14.0]];
 
     [bigSignInButton addTarget:self
                         action:@selector(signInButtonTouchUpInside:)
@@ -370,39 +433,74 @@ enum
 
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cachedCell"];
 
-    if (cell == nil)
+    /*
+     * The size of providerNameLabel changes depending on the text to be displayed.
+     * Therefore, we trash the cell and re-create it each time it is displayed. Okay
+     * for a table with one cell.
+     */
+    if (cell)
     {
-        cell = [[[UITableViewCell alloc]
-                initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cachedCell"] autorelease];
+        [cell removeFromSuperview];
+    }
+    cell = [[UITableViewCell alloc]
+            initWithStyle:UITableViewCellStyleDefault
+          reuseIdentifier:@"cachedCell"];
 
-        [cell.contentView setFrame:CGRectMake(10, 0, 300, 180)];
+    CGRect cellFrameRect = CGRectMake(CELL_FRAME);
+    [cell.contentView setFrame:cellFrameRect];
 
-        UIView *buttonSubview = [[[UIView alloc] initWithFrame:CGRectMake(BUTTON_SUBVIEW_FRAME)] autorelease];
+    // pass nil the first time to alloc the views
+    UIImageView *logo = [self getLogo:nil];
+    UILabel *label = [self getProviderNameLabel:nil];
 
-        [buttonSubview setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin |
-                UIViewAutoresizingFlexibleLeftMargin];
-
-        [buttonSubview addSubview:[self getSignInButton:nil]];
-        [buttonSubview addSubview:[self getBackToProvidersButton:nil]];
-        [buttonSubview addSubview:[self getBigSignInButton:nil]];
-
-        [cell.contentView addSubview:[self getLogo:nil]];
-        [cell.contentView addSubview:[self getWelcomeLabel:nil]];
-        [cell.contentView addSubview:[self getTextField:nil]];
-
-        [cell.contentView addSubview:buttonSubview];
-
-        cell.backgroundColor = [UIColor whiteColor];
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    // Set the size of the frame
+    CGRect subViewFrameRect = CGRectMake(FIRST_SUBVIEW_FRAME);
+    int width = logo.frame.size.width + label.frame.size.width;
+    if (width > cell.frame.size.width)
+    {
+        width = cell.frame.size.width - 10;
     }
 
-    NSString *imagePath = [NSString stringWithFormat:@"logo_%@_280x65.png", sessionData.currentProvider.name];
+    CGRect newSubViewFrameRect = CGRectMake(
+            CGRectGetMidX(cellFrameRect) - width/2 - 15,
+            subViewFrameRect.origin.y,
+            width,
+            subViewFrameRect.size.height);
 
+    // Add first SubView
+    UIView *firstSubView = [[UIView alloc] initWithFrame:newSubViewFrameRect];
+    [firstSubView setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin |
+            UIViewAutoresizingFlexibleLeftMargin];
+
+    [firstSubView addSubview:logo];
+    [firstSubView addSubview:label];
+
+    [firstSubView setTag:FIRST_SUBVIEW_TAG];
+    [cell.contentView addSubview:firstSubView];
+
+    // Second SubView will be placed below the first
+    UIView *secondSubView = [[UIView alloc] initWithFrame:CGRectMake(SECOND_SUBVIEW_FRAME)];
+    [secondSubView setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin |
+            UIViewAutoresizingFlexibleLeftMargin];
+    [secondSubView addSubview:[self getWelcomeLabel:nil]];
+    [secondSubView addSubview:[self getTextField:nil]];
+    [cell.contentView addSubview:secondSubView];
+
+    // Third SubView will be placed below the second
+    UIView *thirdSubView = [[UIView alloc] initWithFrame:CGRectMake(THIRD_SUBVIEW_FRAME)];
+    [thirdSubView setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin |
+            UIViewAutoresizingFlexibleLeftMargin];
+    [thirdSubView addSubview:[self getSignInButton:nil]];
+    [thirdSubView addSubview:[self getBackToProvidersButton:nil]];
+    [thirdSubView addSubview:[self getBigSignInButton:nil]];
+    [cell.contentView addSubview:thirdSubView];
+
+    cell.backgroundColor = [UIColor whiteColor];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+    NSString *imagePath = [NSString stringWithFormat:@"icon_%@_30x30.png",
+                    sessionData.currentProvider.name];
     [self getLogo:cell].image = [UIImage imageNamed:imagePath];
-
-    UITextField *textField = [self getTextField:cell];
-    UIButton *bigSignInButton = [self getBigSignInButton:cell];
-    UILabel *welcomeLabel = [self getWelcomeLabel:cell];
 
     /* If the provider requires input, we need to enable the textField, and set the text/placeholder text to the
     appropriate string */
@@ -412,20 +510,20 @@ enum
 
         if (sessionData.currentProvider.userInput)
         {
-            [textField resignFirstResponder];
-            [textField setText:[NSString stringWithString:sessionData.currentProvider.userInput]];
+            [[self getTextField:cell] resignFirstResponder];
+            [[self getTextField:cell] setText:[NSString stringWithString:sessionData.currentProvider.userInput]];
         }
         else
         {
-            [textField setText:nil];
+            [[self getTextField:cell] setText:nil];
         }
 
-        textField.placeholder = [NSString stringWithString:sessionData.currentProvider.placeholderText];
+        [self getTextField:cell].placeholder = [NSString stringWithString:sessionData.currentProvider.placeholderText];
 
-        [textField setHidden:NO];
-        [textField setEnabled:YES];
-        [welcomeLabel setHidden:YES];
-        [bigSignInButton setHidden:NO];
+        [[self getTextField:cell] setHidden:NO];
+        [[self getTextField:cell] setEnabled:YES];
+        [[self getWelcomeLabel:cell] setHidden:YES];
+        [[self getBigSignInButton:cell] setHidden:NO];
     }
     else
     {
@@ -433,12 +531,11 @@ enum
         only for basic providers */
         DLog(@"current provider does not require input");
 
-        [textField setHidden:YES];
-        [textField setEnabled:NO];
-        [welcomeLabel setHidden:NO];
-        [bigSignInButton setHidden:YES];
-
-        welcomeLabel.text = [sessionData authenticatedUserForProvider:sessionData.currentProvider].welcomeString;
+        [[self getTextField:cell] setHidden:YES];
+        [[self getTextField:cell] setEnabled:NO];
+        [[self getWelcomeLabel:cell] setHidden:NO];
+        [[self getProviderNameLabel:cell] setHidden:NO];
+        [[self getBigSignInButton:cell] setHidden:YES];
     }
 
     return cell;
@@ -463,7 +560,7 @@ enum
 - (void)shrinkTableViewLandscape
 {
     [myTableView setFrame:CGRectMake(TABLE_VIEW_FRAME_LANDSCAPE_SMALL)];
-    [myTableView scrollRectToVisible:CGRectMake(BUTTON_SUBVIEW_FRAME) animated:YES];
+    [myTableView scrollRectToVisible:CGRectMake(THIRD_SUBVIEW_FRAME) animated:YES];
 }
 
 - (void)growTableViewLandscape
@@ -525,6 +622,27 @@ replacementString:(NSString *)string
 {
     DLog(@"");
     DLog(@"user input: %@", textField.text);
+    if ([JRNativeAuth canHandleProvider:sessionData.currentProvider.name]) {
+        self.nativeProvider = [JRNativeAuth nativeProviderNamed:sessionData.currentProvider.name
+                                              withConfiguration:[JREngage instance]];
+        [self.nativeProvider startAuthenticationWithCompletion:^(NSError *error) {
+            if (error) {
+                if ([error.domain isEqualToString:JREngageErrorDomain] && error.code == JRAuthenticationCanceledError) {
+                    [sessionData triggerAuthenticationDidCancel];
+                } else if ([error.domain isEqualToString:JREngageErrorDomain]
+                           && error.code == JRAuthenticationShouldTryWebViewError) {
+                    [self startWebViewAuthentication:textField];
+                } else {
+                    [sessionData triggerAuthenticationDidFailWithError:error];
+                }
+            }
+        }];
+    } else {
+        [self startWebViewAuthentication:textField];
+    }
+}
+
+- (void)startWebViewAuthentication:(UITextField *)textField {
     if (sessionData.currentProvider.requiresInput)
     {
         if (textField.text.length > 0)
@@ -536,12 +654,11 @@ replacementString:(NSString *)string
         }
         else
         {
-            UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Invalid Input"
-                                                             message:@"The input you have entered is not valid. Please "
-                                                                     "try again."
-                                                            delegate:self
-                                                   cancelButtonTitle:@"OK"
-                                                   otherButtonTitles:nil] autorelease];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Invalid Input", nil)
+                          message:NSLocalizedString(@"The input you have entered is not valid. Please try again.", nil)
+                         delegate:self
+                cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                otherButtonTitles:nil];
             [alert show];
             return;
         }
@@ -587,13 +704,5 @@ replacementString:(NSString *)string
 - (void)dealloc
 {
     DLog(@"");
-
-    [customInterface release];
-    [myBackgroundView release];
-    [myTableView release];
-    [sessionData release];
-    [infoBar release];
-
-    [super dealloc];
 }
 @end

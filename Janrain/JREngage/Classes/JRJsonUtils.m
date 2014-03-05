@@ -38,9 +38,6 @@
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonObject options:0 error:&jsonErr];
     if (jsonErr) ALog("WARNING, JSON serialization error: %@", jsonErr);
     NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-#if !__has_feature(objc_arc)
-    [jsonString autorelease];
-#endif
     return jsonString;
 }
 
@@ -70,6 +67,11 @@
 - (NSString *)JR_jsonString
 {
     return [JRJsonUtils jsonStringForJsonObject:self];
+}
+
+- (BOOL)JR_isOKStatus
+{
+    return [@"ok" isEqualToString:[self objectForKey:@"stat"]];
 }
 @end
 

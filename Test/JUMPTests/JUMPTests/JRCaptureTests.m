@@ -34,6 +34,9 @@
 #import "JRConnectionManager.h"
 #import "JRCaptureData.h"
 #import "JRCaptureConfig.h"
+#import "JRCaptureUser+Extras.h"
+#import "JRCaptureFlow.h"
+#import "NSMutableURLRequest+JRRequestUtils.h"
 #import <OCMock/OCMock.h>
 
 @interface JRCaptureTests : GHTestCase
@@ -54,9 +57,9 @@
 
     JRCaptureData *captureData = [[JRCaptureData alloc] init];
     id mockData = [OCMockObject partialMockForObject:captureData];
-    [[[mockData stub] andReturn:flow] captureFlow];
+    [[[mockData stub] andReturn:[JRCaptureFlow flowWithDictionary:flow]] captureFlow];
     [[[mockData stub] andReturn:@"http://base.uri"] captureBaseUrl];
-    [[[mockData stub] andReturn:@"http://resetpassword.here"] passwordRecoverUri];
+    [[[mockData stub] andReturn:@"http://captureRedirectUri.here"] captureRedirectUri];
     [[[mockData stub] andReturn:@"resetPasswordForm"] captureForgottenPasswordFormName];
     [[[mockData stub] andReturn:@"abc123"] clientId];
     [[[mockData stub] andReturn:@"US-en"] captureLocale];
@@ -71,16 +74,119 @@
             @"client_id" : @"abc123",
             @"locale" : @"US-en",
             @"response_type" : @"token",
-            @"redirect_uri" : @"http://resetpassword.here",
+            @"redirect_uri" : @"http://captureRedirectUri_from_JRCaptureData",
             @"form" : @"resetPasswordForm",
             @"flow" : @"native_flow",
             @"flow_version" : @"123456",
             @"traditionalSignIn_emailAddress" : @"me@mydomain.name"
     };
 
+    NSMutableURLRequest *expectedRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:expectedUri]];
+    [expectedRequest JR_setBodyWithParams:expectedParams];
+
     id connectionManager = [OCMockObject mockForClass:[JRConnectionManager class]];
-    [[connectionManager expect] jsonRequestToUrl:expectedUri params:expectedParams completionHandler:[OCMArg any]];
-    [JRCapture startForgottenPasswordRecoveryForField:@"me@mydomain.name" recoverUri:nil delegate:nil];
+    [[connectionManager expect] startURLConnectionWithRequest:expectedRequest completionHandler:[OCMArg any]];
+    [JRCapture startForgottenPasswordRecoveryForField:@"me@mydomain.name" delegate:nil];
+    [connectionManager verify];
+}
+
+- (void)test_resendVerificationEmail
+{
+    NSDictionary *flow = @{
+            @"fields" : @{
+                    @"resendVerificationForm" : @{
+                            @"fields" : @[ @"traditionalSignIn_emailAddress" ]
+                    },
+                    @"traditionalSignIn_emailAddress" : @{ @"type" : @"email" }
+            }
+    };
+
+    JRCaptureData *captureData = [[JRCaptureData alloc] init];
+    id mockData = [OCMockObject partialMockForObject:captureData];
+    [[[mockData stub] andReturn:[JRCaptureFlow flowWithDictionary:flow]] captureFlow];
+    [[[mockData stub] andReturn:@"https://base.uri"] captureBaseUrl];
+    [[[mockData stub] andReturn:@"resendVerificationForm"] resendEmailVerificationFormName];
+    [[[mockData stub] andReturn:@"abc123"] clientId];
+    [[[mockData stub] andReturn:@"US-en"] captureLocale];
+    [[[mockData stub] andReturn:@"standard_flow"] captureFlowName];
+    [[[mockData stub] andReturn:@"123456"] downloadedFlowVersion];
+
+    id mockJRCaptureData = [OCMockObject mockForClass:[JRCaptureData class]];
+    [[[mockJRCaptureData stub] andReturn:mockData] sharedCaptureData];
+
+    NSString *expectedUri = @"https://base.uri/oauth/verify_email_native";
+    NSDictionary *expectedParams = @{
+            @"client_id" : @"abc123",
+            @"locale" : @"US-en",
+            @"response_type" : @"token",
+            @"redirect_uri" : @"https://base.uri/cmeu",
+            @"form" : @"resendVerificationForm",
+            @"traditionalSignIn_emailAddress" : @"me@mydomain.name",
+            @"flow" : @"standard_flow",
+            @"flow_version" : @"123456"
+    };
+
+    NSMutableURLRequest *expectedRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:expectedUri]];
+    [expectedRequest JR_setBodyWithParams:expectedParams];
+
+    id connectionManager = [OCMockObject mockForClass:[JRConnectionManager class]];
+    [[connectionManager expect] startURLConnectionWithRequest:expectedRequest completionHandler:[OCMArg any]];
+    [JRCapture resendVerificationEmail:@"me@mydomain.name" delegate:nil];
+    [connectionManager verify];
+}
+
+- (void)test_updateProfileForUserDelegate
+{
+    NSDictionary *flow = @{
+            @"fields" : @{
+                    @"editProfileForm" : @{
+                            @"fields" : @[ @"message" ]
+                    },
+                    @"message" : @{
+                            @"schemaId" : @{
+                                    @"greeting" : @"basicString",
+                                    @"number" : @"basicInteger",
+                            }
+                    }
+            }
+    };
+
+    JRCaptureData *captureData = [[JRCaptureData alloc]  init];
+    id mockData = [OCMockObject partialMockForObject:captureData];
+    [[[mockData stub] andReturn:[JRCaptureFlow flowWithDictionary:flow]] captureFlow];
+    [[[mockData stub] andReturn:@"http://base.uri"] captureBaseUrl];
+    [[[mockData stub] andReturn:@"editProfileForm"] captureEditProfileFormName];
+    [[[mockData stub] andReturn:@"abc123"] clientId];
+    [[[mockData stub] andReturn:@"12345abcdef"] accessToken];
+    [[[mockData stub] andReturn:@"US-en"] captureLocale];
+    [[[mockData stub] andReturn:@"standard_flow"] captureFlowName];
+    [[[mockData stub] andReturn:@"123456"] downloadedFlowVersion];
+
+    id mockJRCaptureData = [OCMockObject mockForClass:[JRCaptureData class]];
+    [[[mockJRCaptureData stub] andReturn:mockData] sharedCaptureData];
+
+    JRCaptureUser *user = [JRCaptureUser captureUser];
+    user.basicString = @"hello";
+    user.basicInteger = @30;
+
+    NSString *expectedUri = @"http://base.uri/oauth/update_profile_native";
+    NSDictionary *expectedParams = @{
+            @"client_id" : @"abc123",
+            @"access_token" : @"12345abcdef",
+            @"locale" : @"US-en",
+            @"form" : @"editProfileForm",
+            @"flow" : @"standard_flow",
+            @"flow_version" : @"123456",
+            @"message[greeting]" : @"hello",
+            @"message[number]" : @"30"
+    };
+
+    NSMutableURLRequest *expectedRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:expectedUri]];
+    [expectedRequest JR_setBodyWithParams:expectedParams];
+
+    id connectionManager = [OCMockObject mockForClass:[JRConnectionManager class]];
+    [[connectionManager expect] startURLConnectionWithRequest:expectedRequest completionHandler:[OCMArg any]];
+    [JRCapture updateProfileForUser:user delegate:nil ];
     [connectionManager verify];
 }
 

@@ -69,7 +69,7 @@
     if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
     {
         sessionData = [JRSessionData jrSessionData];
-        customInterface = [theCustomInterface retain];
+        customInterface = theCustomInterface;
     }
 
     return self;
@@ -82,6 +82,10 @@
 
     myWebView.backgroundColor = [UIColor clearColor];
 
+    if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+        [self setEdgesForExtendedLayout:UIRectEdgeNone];
+    }
+
     self.navigationItem.backBarButtonItem.target = sessionData;
     self.navigationItem.backBarButtonItem.action = @selector(triggerAuthenticationDidStartOver:);
 }
@@ -92,7 +96,7 @@
     [super viewWillAppear:animated];
     self.contentSizeForViewInPopover = self.view.frame.size;
 
-    self.title = (sessionData.currentProvider) ? sessionData.currentProvider.friendlyName : @"Loading";
+    self.title = (sessionData.currentProvider) ? sessionData.currentProvider.friendlyName : NSLocalizedString(@"Loading", nil);
 
     if (!infoBar)
     {
@@ -121,7 +125,7 @@
             [sessionData.currentProvider.name isEqualToString:@"facebook"] ||
             [sessionData.currentProvider.name isEqualToString:@"yahoo"]))
     {
-        UIWebView *dummy = [[[UIWebView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)] autorelease];
+        UIWebView *dummy = [[UIWebView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
         NSString *padUa = [dummy stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
         customUa = [padUa stringByReplacingOccurrencesOfString:@"iPad" withString:@"iPhone"
                                                        options:NSCaseInsensitiveSearch
@@ -136,10 +140,10 @@
     if (!self.navigationController.navigationBar.backItem && !sessionData.socialSharing)
     {
         UIBarButtonItem *cancelButton =
-                [[[UIBarButtonItem alloc]
+                [[UIBarButtonItem alloc]
                         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                              target:self
-                                             action:@selector(cancelButtonPressed:)] autorelease];
+                                             action:@selector(cancelButtonPressed:)];
 
         self.navigationItem.rightBarButtonItem = cancelButton;
         self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -239,9 +243,7 @@
     DLog(@"");
     if (!IS_IPAD) return;
 
-    if (!([sessionData.currentProvider.name isEqualToString:@"google"] ||
-            [sessionData.currentProvider.name isEqualToString:@"yahoo"]))
-        return;
+    if (![sessionData.currentProvider.name isEqualToString:@"google"]) return;
 
     /* This fixes the UIWebView's display of IDP sign-in pages to make them fit the iPhone sized dialog on the iPad.
      * It's broken up into separate JS injections in case one statement fails (e.g. there is no document element),
@@ -309,12 +311,11 @@
         {
             NSError *error = [JREngageError errorWithMessage:errorMessage andCode:JRAuthenticationFailedError];
 
-            UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Log In Failed"
-                                                             message:@"An error occurred while attempting to sign you "
-                                                                     "in.  Please try again."
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Log In Failed", nil)
+                                                             message:NSLocalizedString(@"An error occurred while attempting to sign you in.  Please try again.", nil)
                                                             delegate:nil
-                                                   cancelButtonTitle:@"OK"
-                                                   otherButtonTitles:nil] autorelease];
+                                                   cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                   otherButtonTitles:nil];
             [alert show];
 
             userHitTheBackButton = NO; /* Because authentication failed for whatever reason. */
@@ -332,18 +333,18 @@
             {
                 NSString *alertMessage;
                 if (sessionData.currentProvider.requiresInput)
-                    alertMessage = [NSString stringWithFormat:@"The %@ you entered was not valid. Please try again.",
-                                                              sessionData.currentProvider.shortText];
+                    alertMessage = [NSString stringWithFormat:NSLocalizedString(@"The %@ you entered was not valid. Please try again.", nil),
+                        sessionData.currentProvider.shortText];
                 else
-                    alertMessage = @"There was a problem authenticating with this provider. Please try again.";
+                    alertMessage = NSLocalizedString(@"There was a problem authenticating with this provider. Please try again.", nil);
 
                 DLog(@"Discovery failed for the OpenID you entered: %@", alertMessage);
 
-                UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Invalid Input"
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Invalid Input", nil)
                                                                  message:alertMessage
                                                                 delegate:nil
-                                                       cancelButtonTitle:@"OK"
-                                                       otherButtonTitles:nil] autorelease];
+                                                       cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                       otherButtonTitles:nil];
 
                 userHitTheBackButton = NO; /* Because authentication failed for whatever reason. */
                 [[self navigationController] popViewControllerAnimated:YES];
@@ -355,18 +356,18 @@
             {
                 NSString *alertMessage;
                 if (sessionData.currentProvider.requiresInput)
-                    alertMessage = [NSString stringWithFormat:@"The %@ you entered was not valid. Please try again.",
+                    alertMessage = [NSString stringWithFormat:NSLocalizedString(@"The %@ you entered was not valid. Please try again.", nil),
                                                               sessionData.currentProvider.shortText];
                 else
-                    alertMessage = @"There was a problem authenticating with this provider. Please try again.";
+                    alertMessage = NSLocalizedString(@"There was a problem authenticating with this provider. Please try again.", nil);
 
                 DLog(@"The URL you entered does not appear to be an OpenID: %@", alertMessage);
 
-                UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Invalid Input"
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Invalid Input", nil)
                                                                  message:alertMessage
                                                                 delegate:nil
-                                                       cancelButtonTitle:@"OK"
-                                                       otherButtonTitles:nil] autorelease];
+                                                       cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                       otherButtonTitles:nil];
 
                 userHitTheBackButton = NO; /* Because authentication failed for whatever reason. */
                 [[self navigationController] popViewControllerAnimated:YES];
@@ -384,12 +385,11 @@
             else
             {
                 NSError *error = [JREngageError errorWithMessage:errorMessage andCode:JRAuthenticationFailedError];
-                UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Log In Failed"
-                                                                 message:@"An error occurred while attempting to sign "
-                                                                         "you in.  Please try again."
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Log In Failed", nil)
+                                                                 message:NSLocalizedString(@"An error occurred while attempting to sign you in.  Please try again.", nil)
                                                                 delegate:nil
-                                                       cancelButtonTitle:@"OK"
-                                                       otherButtonTitles:nil] autorelease];
+                                                       cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                       otherButtonTitles:nil];
                 [alert show];
 
                 userHitTheBackButton = NO; /* Because authentication failed for whatever reason. */
@@ -483,11 +483,11 @@
                                                                                        [error localizedDescription]]
                                                     andCode:JRAuthenticationFailedError];
 
-        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Log In Failed"
-                                                         message:@"An error occurred while attempting to sign you in.  Please try again."
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Log In Failed", nil)
+                                                         message:NSLocalizedString(@"An error occurred while attempting to sign you in.  Please try again.", nil)
                                                         delegate:nil
-                                               cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil] autorelease];
+                                               cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                               otherButtonTitles:nil];
         [alert show];
 
         userHitTheBackButton = NO; /* Because authentication failed for whatever reason. */
@@ -516,13 +516,5 @@
     // Must set delegate to nil to avoid this controller being called after
     // it has been freed by the web view.
     myWebView.delegate = nil;
-
-    [customInterface release];
-    [myBackgroundView release];
-    [originalCustomUserAgent release];
-    [myWebView release];
-    [infoBar release];
-
-    [super dealloc];
 }
 @end

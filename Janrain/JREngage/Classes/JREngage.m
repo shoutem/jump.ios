@@ -37,17 +37,28 @@
 #import "JRUserInterfaceMaestro.h"
 #import "JREngageError.h"
 #import "JRNativeAuth.h"
+#import "JRNativeProvider.h"
 
 @interface JREngage () <JRSessionDelegate>
 /** \internal Class that handles customizations to the library's UI */
-@property (nonatomic, retain) JRUserInterfaceMaestro *interfaceMaestro;
+@property (nonatomic) JRUserInterfaceMaestro *interfaceMaestro;
 
 /** \internal Holds configuration and state for the JREngage library */
-@property (nonatomic, retain) JRSessionData          *sessionData;
+@property (nonatomic) JRSessionData          *sessionData;
 
 /** \internal Array of JREngageDelegate objects */
-@property (nonatomic, retain) NSMutableArray         *delegates;
+@property (nonatomic) NSMutableArray         *delegates;
+
+@property (nonatomic) NSString *googlePlusClientId;
+@property (nonatomic) NSString *twitterConsumerKey;
+@property (nonatomic) NSString *twitterConsumerSecret;
+
+@property (nonatomic) JRNativeProvider *nativeProvider;
+
 @end
+
+NSString *const JRFinishedUpdatingEngageConfigurationNotification = @"JRFinishedUpdatingEngageConfigurationNotification";
+NSString *const JRFailedToUpdateEngageConfigurationNotification = @"JRFailedToUpdateEngageConfigurationNotification";
 
 @implementation JREngage
 @synthesize interfaceMaestro;
@@ -55,15 +66,6 @@
 @synthesize delegates;
 
 static JREngage* singleton = nil;
-
-- (id)init
-{
-    if ((self = [super init]))
-    {
-    }
-
-    return self;
-}
 
 + (JREngage *)singletonInstance
 {
@@ -76,7 +78,7 @@ static JREngage* singleton = nil;
 
 + (id)allocWithZone:(NSZone *)zone
 {
-    return [[self singletonInstance] retain];
+    return [self singletonInstance];
 }
 
 - (void)setEngageAppID:(NSString *)appId tokenUrl:(NSString *)tokenUrl andDelegate:(id<JREngageSigninDelegate>)delegate
@@ -102,6 +104,13 @@ static JREngage* singleton = nil;
     [[JREngage singletonInstance] setEngageAppID:appId tokenUrl:tokenUrl andDelegate:delegate];
 }
 
++ (JREngage *)instance {
+    if (singleton) {
+        return [JREngage singletonInstance];
+    }
+    return nil;
+}
+
 + (JREngage *)jrEngageWithAppId:(NSString *)appId andTokenUrl:(NSString *)tokenUrl
                        delegate:(id <JREngageSigninDelegate>)delegate {
     [JREngage setEngageAppId:appId tokenUrl:tokenUrl andDelegate:delegate];
@@ -109,24 +118,16 @@ static JREngage* singleton = nil;
     return [JREngage singletonInstance];
 }
 
++ (void)setGooglePlusClientId:(NSString *)clientId {
+    [[JREngage singletonInstance] setGooglePlusClientId:clientId];
+}
+
++ (void)setTwitterConsumerKey:(NSString *)consumerKey andSecret:(NSString *)consumerSecret {
+    [[JREngage singletonInstance] setTwitterConsumerKey:consumerKey];
+    [[JREngage singletonInstance] setTwitterConsumerSecret:consumerSecret];
+}
+
 - (id)copyWithZone:(__unused NSZone *)zone __unused
-{
-    return self;
-}
-
-- (id)retain
-{
-    return self;
-}
-
-- (NSUInteger)retainCount
-{
-    return NSUIntegerMax;
-}
-
-- (oneway void)release { }
-
-- (id)autorelease
 {
     return self;
 }
@@ -164,6 +165,13 @@ static JREngage* singleton = nil;
     }
 }
 
+- (void)markFlowForAccountLinking:(BOOL)linkAccount forProviders:(NSString *)provider
+                  customInterface:(NSDictionary *)customInterfaceOverrides {
+    ALog (@"JREngage Marking flow for Account Linking");
+    sessionData.accountLinking = linkAccount;
+    [self showAuthenticationDialogForProvider:provider customInterface:customInterfaceOverrides];
+    
+}
 - (void)showAuthenticationDialogForProvider:(NSString *)provider
                             customInterface:(NSDictionary *)customInterfaceOverrides
 {
@@ -182,7 +190,7 @@ static JREngage* singleton = nil;
 
         if (sessionData.error.code / 100 == ConfigurationError)
         {
-            [self engageDidFailWithError:[[sessionData.error copy] autorelease]];
+            [self engageDidFailWithError:[sessionData.error copy]];
             [sessionData tryToReconfigureLibrary];
 
             return;
@@ -191,7 +199,7 @@ static JREngage* singleton = nil;
         {
             // TODO: The session data error doesn't get reset here.  When will this happen and what will be the
             // expected behavior?
-            [self engageDidFailWithError:[[sessionData.error copy] autorelease]];
+            [self engageDidFailWithError:[sessionData.error copy]];
             return;
         }
     }
@@ -215,7 +223,7 @@ static JREngage* singleton = nil;
 
     if ([JRNativeAuth canHandleProvider:provider])
     {
-        [self startNativeAuthWithCustomInterface:customInterfaceOverrides provider:provider];
+        [self startNativeAuthOnProvider:provider customInterface:customInterfaceOverrides];
     }
     else
     {
@@ -223,28 +231,22 @@ static JREngage* singleton = nil;
     }
 }
 
-- (void)startNativeAuthWithCustomInterface:(NSDictionary *)customInterfaceOverrides provider:(NSString *)provider
-{
-    [JRNativeAuth startAuthOnProvider:provider completion:^(NSError *error)
-    {
+- (void)startNativeAuthOnProvider:(NSString *)provider customInterface:(NSDictionary *)customInterfaceOverrides {
+    self.nativeProvider = [JRNativeAuth nativeProviderNamed:provider withConfiguration:self];
+    [self.nativeProvider startAuthenticationWithCompletion:^(NSError *error) {
+
         if (!error) return;
-        if ([error.domain isEqualToString:JREngageErrorDomain] && error.code == JRAuthenticationCanceledError)
-        {
+
+        if ([error.domain isEqualToString:JREngageErrorDomain] && error.code == JRAuthenticationCanceledError) {
             [self authenticationDidCancel];
-        }
-        else
-        {
+        } else if ([error.domain isEqualToString:JREngageErrorDomain]
+                   && error.code == JRAuthenticationShouldTryWebViewError) {
             [interfaceMaestro startWebAuthWithCustomInterface:customInterfaceOverrides provider:provider];
+        } else {
+            [self authenticationDidFailWithError:error forProvider:provider];
         }
     }];
 }
-
-//- (void)showAuthenticationDialogForProvider:(NSString *)provider
-//               withCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
-//{
-//    [self showAuthenticationDialogWithCustomInterfaceOverrides:customInterfaceOverrides
-//                            orAuthenticatingOnJustThisProvider:provider];
-//}
 
 + (void)showAuthenticationDialogForProvider:(NSString *)provider
                withCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides __unused
@@ -253,16 +255,19 @@ static JREngage* singleton = nil;
                                                       customInterface:customInterfaceOverrides];
 }
 
-//- (void)showAuthenticationDialogWithCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
-//{
-//    [self showAuthenticationDialogWithCustomInterfaceOverrides:customInterfaceOverrides
-//                            orAuthenticatingOnJustThisProvider:nil];
-//}
-
 + (void)showAuthenticationDialogWithCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides __unused
 {
     [[JREngage singletonInstance] showAuthenticationDialogForProvider:nil
                                                       customInterface:customInterfaceOverrides];
+}
+
++(void)showAuthenticationDialogWithCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                          forAccountLinking:(BOOL)linkAccount
+{
+    [[JREngage singletonInstance] markFlowForAccountLinking:linkAccount
+                                               forProviders:nil
+                                            customInterface:customInterfaceOverrides];
+    
 }
 
 //- (void)showAuthenticationDialogForProvider:(NSString *)provider
@@ -306,14 +311,14 @@ static JREngage* singleton = nil;
 
         if (sessionData.error.code / 100 == ConfigurationError)
         {
-            [self engageDidFailWithError:[[sessionData.error copy] autorelease]];
+            [self engageDidFailWithError:[sessionData.error copy]];
             [sessionData tryToReconfigureLibrary];
 
             return;
         }
         else
         {
-            [self engageDidFailWithError:[[sessionData.error copy] autorelease]];
+            [self engageDidFailWithError:[sessionData.error copy]];
             return;
         }
     }
@@ -573,10 +578,6 @@ static JREngage* singleton = nil;
 
 - (void)dealloc
 {
-    [interfaceMaestro release];
-    [sessionData release];
-    [delegates release];
-    [super dealloc];
 }
 
 + (void)setCustomInterfaceDefaults:(NSDictionary *)customInterfaceDefaults
@@ -589,4 +590,50 @@ static JREngage* singleton = nil;
 {
     [[JREngage singletonInstance].sessionData setCustomProvidersWithDictionary:customProviders];
 }
+
++ (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation {
+    return [JRNativeAuth application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
+}
+
++ (void)applicationDidBecomeActive:(UIApplication *)application {
+    Class fbSession = NSClassFromString(@"FBSession");
+    if (fbSession) {
+        SEL activeSessionSelector = NSSelectorFromString(@"activeSession");
+        id (*getActiveSession)(id, SEL) = (void *)[fbSession methodForSelector:activeSessionSelector];
+        id activeSession = getActiveSession(fbSession, activeSessionSelector);
+
+        SEL handleDidBecomeActiveSelector = NSSelectorFromString(@"handleDidBecomeActive");
+        void (*handleDidBecomeActive)(id, SEL, UIApplication *) =
+            (void *)[activeSession methodForSelector:handleDidBecomeActiveSelector];
+        handleDidBecomeActive(activeSession, handleDidBecomeActiveSelector, application);
+    }
+
+    if (singleton) {
+        [singleton applicationDidBecomeActive:application];
+    }
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    if (sessionData.nativeAuthenticationFlowIsInFlight) {
+        [interfaceMaestro authenticationCanceled];
+    }
+}
+
+- (void)authenticationDidSucceedForAccountLinking:(NSDictionary *)profile
+                                      forProvider:(NSString *)provider
+{
+    ALog (@"Signing complete for %@", provider);
+    
+    NSArray *delegatesCopy = [NSArray arrayWithArray:delegates];
+    for (id<JREngageSigninDelegate> delegate in delegatesCopy)
+    {
+        if ([delegate respondsToSelector:@selector(engageAuthenticationDidSucceedForAccountLinking:forProvider:)])
+            [delegate engageAuthenticationDidSucceedForAccountLinking:profile forProvider:provider];
+    }
+    
+    [interfaceMaestro authenticationCompleted];
+}
+
+
 @end

@@ -40,6 +40,8 @@
 #import "JRCaptureUser+Extras.h"
 #import "JRCaptureObject+Internal.h"
 #import "JRActivityObject.h"
+#import "LinkedProfilesViewController.h"
+#import "JRCaptureData.h"
 
 @interface MyCaptureDelegate : NSObject <JRCaptureDelegate, JRCaptureUserDelegate>
 @property RootViewController *rvc;
@@ -47,7 +49,7 @@
 - (id)initWithRootViewController:(RootViewController *)rvc;
 @end
 
-@interface RootViewController () <UIAlertViewDelegate>
+@interface RootViewController () <UIAlertViewDelegate, LinkedProfilesDelegate>
 @property(nonatomic, copy) void (^viewDidAppearContinuation)();
 @property(nonatomic) BOOL viewIsApparent;
 @property MyCaptureDelegate *captureDelegate;
@@ -65,6 +67,10 @@
 
     self.customUi = @{kJRApplicationNavigationController : self.navigationController};
     [self configureUserLabelAndIcon];
+
+    if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+        [self setEdgesForExtendedLayout:UIRectEdgeNone];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -93,9 +99,12 @@
         self.shareButton.hidden = NO;
         self.refetchButton.hidden = NO;
         self.forgotPasswordButton.hidden = YES;
+        self.resendVerificationButton.hidden = YES;
+        self.linkAccountButton.hidden = NO;
+        self.unlinkAccountButton.hidden = NO;
 
-        self.formButton.hidden = NO;
-        [self.formButton setTitle:@"Update" forState:UIControlStateNormal];
+        self.formButton.hidden = YES;
+        self.updateProfileButton.hidden = NO;
 
         self.browseButton.enabled = YES;
         self.browseButton.alpha = 1;
@@ -110,9 +119,12 @@
         self.shareButton.hidden = YES;
         self.refetchButton.hidden = YES;
         self.forgotPasswordButton.hidden = NO;
+        self.resendVerificationButton.hidden = NO;
+        self.linkAccountButton.hidden = YES;
+        self.unlinkAccountButton.hidden = YES;
 
+        self.updateProfileButton.hidden = YES;
         self.formButton.hidden = NO;
-        [self.formButton setTitle:@"Traditional Registration" forState:UIControlStateNormal];
 
         self.browseButton.enabled = NO;
         self.browseButton.alpha = 0.5;
@@ -133,7 +145,7 @@
     self.refreshButton.alpha = self.signInButton.alpha = self.browseButton.alpha = self.signOutButton.alpha =
                 self.formButton.alpha = self.refetchButton.alpha = self.shareButton.alpha =
                 self.directFacebookAuthButton.alpha = self.forgotPasswordButton.alpha =
-                self.tradAuthButton.alpha = 0.5 + b * 0.5;
+                self.resendVerificationButton.alpha = self.tradAuthButton.alpha = 0.5 + b * 0.5;
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -160,16 +172,9 @@
     DLog(@"Capture user record: %@", [appDelegate.captureUser toDictionaryForEncoder:NO]);
 }
 
-- (IBAction)updateButtonPressed:(id)sender
+- (IBAction)tradRegButtonPressed:(id)sender
 {
-    if (appDelegate.captureUser)
-    {
-        [RootViewController showProfileForm:self.navigationController];
-    }
-    else
-    {
-        [self showRegistrationForm];
-    }
+    [self showRegistrationForm];
 }
 
 - (void)showRegistrationForm
@@ -201,6 +206,24 @@
 {
     [self startSignInForProvider:@"facebook"];
     //[JRCapture startEngageSignInDialogOnProvider:@"facebook" forDelegate:self.captureDelegate];
+}
+
+-(IBAction)linkAccountButtonPressed:(id)sender
+{
+    void (^completion)(UIAlertView *, BOOL, NSInteger) =
+    ^(UIAlertView *alertView, BOOL cancelled, NSInteger buttonIndex) {
+        if(buttonIndex != alertView.cancelButtonIndex) {
+            [JRCapture startAccountLinkingSignInDialogForDelegate:self.captureDelegate
+                                                forAccountLinking:YES
+                                                  withRedirectUri:@"http://your-domain-custom-redirect-url-page.html"];
+        }
+    };
+    [[[AlertViewWithBlocks alloc] initWithTitle:@"Capture Account Linking"
+                                        message:@"Do you wish to Link a new account to your current account ?"
+                                     completion:completion
+                                          style:UIAlertViewStyleDefault
+                              cancelButtonTitle:@"Cancel"
+                              otherButtonTitles:@"Continue", Nil] show];
 }
 
 - (void)startSignInForProvider:(NSString *)provider
@@ -250,7 +273,7 @@
             ^(UIAlertView *alertView, BOOL cancelled, NSInteger buttonIndex) {
                 if (buttonIndex != alertView.cancelButtonIndex) {
                     NSString *emailAddress = [alertView textFieldAtIndex:0].text;
-                    [JRCapture startForgottenPasswordRecoveryForField:emailAddress recoverUri:nil
+                    [JRCapture startForgottenPasswordRecoveryForField:emailAddress
                                                              delegate:self.captureDelegate];
                 }
             };
@@ -260,6 +283,44 @@
                                      completion:completion
                                           style:UIAlertViewStylePlainTextInput
                               cancelButtonTitle:@"Cancel" otherButtonTitles:@"Send", nil] show];
+}
+
+-(void)unlinkAccountButtonPressed:(id)sender {
+    void (^completion)(UIAlertView *, BOOL, NSInteger) =
+    ^(UIAlertView *alertView, BOOL cancelled, NSInteger buttonIndex) {
+        if (buttonIndex != alertView.cancelButtonIndex) {
+            LinkedProfilesViewController *linkedProfilesController = [[LinkedProfilesViewController alloc]init];
+            linkedProfilesController.delegate = self;
+            linkedProfilesController.linkedProfiles = [JRCaptureData getLinkedProfiles];
+            [self.navigationController presentViewController:linkedProfilesController animated:YES completion:nil];
+        }
+    };
+    
+    [[[AlertViewWithBlocks alloc] initWithTitle:@"Unlink Account"
+                                        message:@"You are going to start account unlinking process."
+                                     completion:completion
+                                          style:UIAlertViewStyleDefault
+                              cancelButtonTitle:@"Cancel" otherButtonTitles:@"Proceed", nil] show];
+}
+
+- (IBAction)resendVerificationButtonPressed:(id)sender {
+    void (^completion)(UIAlertView *, BOOL, NSInteger) =
+            ^(UIAlertView *alertView, BOOL cancelled, NSInteger buttonIndex) {
+                if (buttonIndex != alertView.cancelButtonIndex) {
+                    NSString *emailAddress = [alertView textFieldAtIndex:0].text;
+                    [JRCapture resendVerificationEmail:emailAddress delegate:self.captureDelegate];
+                }
+            };
+
+    [[[AlertViewWithBlocks alloc] initWithTitle:@"Please confirm your email"
+                                        message:@"We'll resend your verification email."
+                                     completion:completion
+                                          style:UIAlertViewStylePlainTextInput
+                              cancelButtonTitle:@"Cancel" otherButtonTitles:@"Send", nil] show];
+}
+
+-(void)unlinkSelectedProfile:(NSString *)selectedProfile {
+    [JRCapture startAccountUnLinking:self.captureDelegate forProfileIdentifier:selectedProfile];
 }
 
 - (void)configureUserLabelAndIcon
@@ -454,7 +515,12 @@
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Success" message:nil
                                                        delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
     [alertView show];
-    [self.rvc configureViewsWithDisableOverride:NO];
+    appDelegate.captureUser = fetchedUser;
+    [appDelegate.prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:appDelegate.captureUser]
+                          forKey:cJRCaptureUser];
+
+    [self.rvc configureViewsWithDisableOverride:NO ];
+    [self.rvc configureUserLabelAndIcon];
 }
 
 - (void)engageAuthenticationDialogDidFailToShowWithError:(NSError *)error
@@ -536,7 +602,20 @@
                               cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
 }
 
-- (void)captureDidSucceedWithCode:(NSString *)code {
+- (void)resendVerificationEmailDidSucceed {
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Verification email Sent" message:@"" delegate:nil
+                                              cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+    [alertView show];
+}
+
+- (void)resendVerificationEmailDidFailWithError:(NSError *)error {
+    [[[UIAlertView alloc] initWithTitle:@"Failed to resend verification email"
+                                message:[NSString stringWithFormat:@"%@", error] delegate:nil
+                      cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
+}
+
+- (void)captureDidSucceedWithCode:(NSString *)code
+{
     DLog(@"Authorization Code: %@",code);
 }
 
@@ -559,6 +638,43 @@
 
 - (void)engageAuthenticationDidCancel
 {
+}
+
+- (void)linkNewAccountDidSucceed
+{
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"New Account Linked Successfully."
+                                                        message:@"Account Linked Successfully"
+                                                       delegate:nil
+                                              cancelButtonTitle:@"Dismiss"
+                                              otherButtonTitles:nil];
+    [alertView show];
+}
+
+- (void)accountUnlinkingDidSucceed {
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Account unlinking Success"
+                                                        message:@"Account unlinked successfully."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+    [alertView show];
+}
+
+- (void)linkNewAccountDidFailWithError:(NSError *)error
+{
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Failed to link new account." message:error.localizedFailureReason delegate:nil
+                                              cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+    [alertView show];
+    
+}
+
+- (void)accountUnlinkingDidFailWithError:(NSError *)error
+{
+    [[[UIAlertView alloc] initWithTitle:@"Account unlinking Failure"
+                                message:[NSString stringWithFormat:@"%@", error] delegate:nil
+                      cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
 }
 
 @end

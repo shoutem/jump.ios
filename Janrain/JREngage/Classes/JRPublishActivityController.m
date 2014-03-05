@@ -53,10 +53,10 @@
 #define JRR_INNER_RECT_INSET      6
 
 @interface JRRoundedRect : UIView
-@property(nonatomic, retain) UIColor *outerStrokeColor;
-@property(nonatomic, retain) UIColor *innerStrokeColor;
-@property(nonatomic, retain) UIColor *outerFillColor;
-@property(nonatomic, retain) UIColor *innerFillColor;
+@property(nonatomic) UIColor *outerStrokeColor;
+@property(nonatomic) UIColor *innerStrokeColor;
+@property(nonatomic) UIColor *outerFillColor;
+@property(nonatomic) UIColor *innerFillColor;
 @property CGFloat outerStrokeWidth;
 @property CGFloat innerStrokeWidth;
 @property CGFloat outerCornerRadius;
@@ -241,58 +241,53 @@ or opacity of our rounded rectangle. */
 
 - (void)dealloc
 {
-    [outerStrokeColor release];
-    [innerStrokeColor release];
-    [outerFillColor release];
-    [innerFillColor release];
-    [super dealloc];
 }
 @end
 
 @interface JRPublishActivityController ()
-@property(nonatomic, retain) IBOutlet UIView *myBackgroundView;
-@property(nonatomic, retain) IBOutlet UITabBar *myTabBar;
-@property(nonatomic, retain) IBOutlet UILabel *myLoadingLabel;
-@property(nonatomic, retain) IBOutlet UIActivityIndicatorView *myLoadingActivitySpinner;
-@property(nonatomic, retain) IBOutlet UIView *myLoadingGrayView;
-@property(nonatomic, retain) IBOutlet UIView *myPadGrayEditingViewTop;
-@property(nonatomic, retain) IBOutlet UIView *myPadGrayEditingViewMiddle;
-@property(nonatomic, retain) IBOutlet UIView *myPadGrayEditingViewBottom;
-@property(nonatomic, retain) IBOutlet UIView *myContentView;
-@property(nonatomic, retain) IBOutlet UIScrollView *myScrollView;
-@property(nonatomic, retain) IBOutlet UITextView *myUserCommentTextView;
-@property(nonatomic, retain) IBOutlet JRRoundedRect *myUserCommentBoundingBox;
-@property(nonatomic, retain) IBOutlet UILabel *myRemainingCharactersLabel;
-@property(nonatomic, retain) IBOutlet UIView *myEntirePreviewContainer;
-@property(nonatomic, retain) IBOutlet JRRoundedRect *myPreviewContainerRoundedRect;
-@property(nonatomic, retain) IBOutlet JRPreviewLabel *myPreviewOfTheUserCommentLabel;
-@property(nonatomic, retain) IBOutlet JRRoundedRect *myRichDataContainer;
-@property(nonatomic, retain) IBOutlet UIButton *myMediaThumbnailView;
-@property(nonatomic, retain) IBOutlet UIActivityIndicatorView *myMediaThumbnailActivityIndicator;
-@property(nonatomic, retain) IBOutlet UILabel *myTitleLabel;
-@property(nonatomic, retain) IBOutlet UILabel *myDescriptionLabel;
-@property(nonatomic, retain) IBOutlet UIButton *myInfoButton;
-@property(nonatomic, retain) IBOutlet UILabel *myPoweredByLabel;
-@property(nonatomic, retain) IBOutlet UIImageView *myProviderIcon;
-@property(nonatomic, retain) IBOutlet UIView *myShareToView;
-@property(nonatomic, retain) IBOutlet UIImageView *myTriangleIcon;
-@property(nonatomic, retain) IBOutlet UIButton *myConnectAndShareButton;
-@property(nonatomic, retain) IBOutlet UIButton *myJustShareButton;
-@property(nonatomic, retain) IBOutlet UIButton *myProfilePic;
-@property(nonatomic, retain) IBOutlet UIActivityIndicatorView *myProfilePicActivityIndicator;
-@property(nonatomic, retain) IBOutlet UILabel *myUserName;
-@property(nonatomic, retain) IBOutlet UIButton *mySignOutButton;
-@property(nonatomic, retain) IBOutlet UIImageView *mySharedCheckMark;
-@property(nonatomic, retain) IBOutlet UILabel *mySharedLabel;
-@property(nonatomic, retain) JRProvider *selectedProvider;
-@property(nonatomic, retain) JRAuthenticatedUser *loggedInUser;
-@property(nonatomic, retain) JRSessionData *sessionData;
-@property(nonatomic, retain) JRActivityObject *currentActivity;
-@property(nonatomic, retain) NSDictionary *customInterface;
-@property(nonatomic, retain) NSMutableSet *alreadyShared;
-@property(nonatomic, retain) NSMutableDictionary *cachedProfilePics;
-@property(nonatomic, retain) UIView *titleView;
-@property(nonatomic, retain) NSTimer *timer;
+@property(nonatomic) IBOutlet UIView *myBackgroundView;
+@property(nonatomic) IBOutlet UITabBar *myTabBar;
+@property(nonatomic) IBOutlet UILabel *myLoadingLabel;
+@property(nonatomic) IBOutlet UIActivityIndicatorView *myLoadingActivitySpinner;
+@property(nonatomic) IBOutlet UIView *myLoadingGrayView;
+@property(nonatomic) IBOutlet UIView *myPadGrayEditingViewTop;
+@property(nonatomic) IBOutlet UIView *myPadGrayEditingViewMiddle;
+@property(nonatomic) IBOutlet UIView *myPadGrayEditingViewBottom;
+@property(nonatomic) IBOutlet UIView *myContentView;
+@property(nonatomic) IBOutlet UIScrollView *myScrollView;
+@property(nonatomic) IBOutlet UITextView *myUserCommentTextView;
+@property(nonatomic) IBOutlet JRRoundedRect *myUserCommentBoundingBox;
+@property(nonatomic) IBOutlet UILabel *myRemainingCharactersLabel;
+@property(nonatomic) IBOutlet UIView *myEntirePreviewContainer;
+@property(nonatomic) IBOutlet JRRoundedRect *myPreviewContainerRoundedRect;
+@property(nonatomic) IBOutlet JRPreviewLabel *myPreviewOfTheUserCommentLabel;
+@property(nonatomic) IBOutlet JRRoundedRect *myRichDataContainer;
+@property(nonatomic) IBOutlet UIButton *myMediaThumbnailView;
+@property(nonatomic) IBOutlet UIActivityIndicatorView *myMediaThumbnailActivityIndicator;
+@property(nonatomic) IBOutlet UILabel *myTitleLabel;
+@property(nonatomic) IBOutlet UILabel *myDescriptionLabel;
+@property(nonatomic) IBOutlet UIButton *myInfoButton;
+@property(nonatomic) IBOutlet UILabel *myPoweredByLabel;
+@property(nonatomic) IBOutlet UIImageView *myProviderIcon;
+@property(nonatomic) IBOutlet UIView *myShareToView;
+@property(nonatomic) IBOutlet UIImageView *myTriangleIcon;
+@property(nonatomic) IBOutlet UIButton *myConnectAndShareButton;
+@property(nonatomic) IBOutlet UIButton *myJustShareButton;
+@property(nonatomic) IBOutlet UIButton *myProfilePic;
+@property(nonatomic) IBOutlet UIActivityIndicatorView *myProfilePicActivityIndicator;
+@property(nonatomic) IBOutlet UILabel *myUserName;
+@property(nonatomic) IBOutlet UIButton *mySignOutButton;
+@property(nonatomic) IBOutlet UIImageView *mySharedCheckMark;
+@property(nonatomic) IBOutlet UILabel *mySharedLabel;
+@property(nonatomic) JRProvider *selectedProvider;
+@property(nonatomic) JRAuthenticatedUser *loggedInUser;
+@property(nonatomic) JRSessionData *sessionData;
+@property(nonatomic) JRActivityObject *currentActivity;
+@property(nonatomic) NSDictionary *customInterface;
+@property(nonatomic) NSMutableSet *alreadyShared;
+@property(nonatomic) NSMutableDictionary *cachedProfilePics;
+@property(nonatomic) UIView *titleView;
+@property(nonatomic) NSTimer *timer;
 @property(nonatomic) BOOL weAreCurrentlyPostingSomething;
 @property(nonatomic, copy) NSString *shortenedActivityUrl;
 @property(nonatomic) int maxCharacters;
@@ -357,13 +352,17 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     DLog(@"");
     [super viewDidLoad];
 
-    self.alreadyShared = [[[NSMutableSet alloc] initWithCapacity:[self.sessionData.sharingProviders count]] autorelease];
-    self.cachedProfilePics = [[[NSMutableDictionary alloc] initWithCapacity:[self.sessionData.sharingProviders count]] autorelease];
+    if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+        [self setEdgesForExtendedLayout:UIRectEdgeNone];
+    }
+
+    self.alreadyShared = [[NSMutableSet alloc] initWithCapacity:[self.sessionData.sharingProviders count]];
+    self.cachedProfilePics = [[NSMutableDictionary alloc] initWithCapacity:[self.sessionData.sharingProviders count]];
 
     if ([[self.customInterface objectForKey:kJRSocialSharingTitleString] isKindOfClass:[NSString class]])
         self.title = NSLocalizedString([self.customInterface objectForKey:kJRSocialSharingTitleString], @"");
     else
-        self.title = NSLocalizedString(@"Share", @"");
+        self.title = NSLocalizedString(@"Share", nil);
 
     /* Load the custom background view, if there is one. */
     if ([self.customInterface objectForKey:kJRSocialSharingBackgroundImageView])
@@ -375,17 +374,17 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     if ([self.customInterface objectForKey:kJRSocialSharingBackgroundColor])
         myBackgroundView.backgroundColor = [self.customInterface objectForKey:kJRSocialSharingBackgroundColor];
 
-    self.titleView = [[[self.customInterface objectForKey:kJRSocialSharingTitleView] retain] autorelease];
+    self.titleView = [self.customInterface objectForKey:kJRSocialSharingTitleView];
 
     if (self.titleView)
         self.navigationItem.titleView = self.titleView;
 
     if (!self.hidesCancelButton)
     {
-        UIBarButtonItem *cancelButton = [[[UIBarButtonItem alloc]
+        UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc]
                 initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                      target:self.sessionData
-                                     action:@selector(triggerPublishingDidCancel:)] autorelease];
+                                     action:@selector(triggerPublishingDidCancel:)];
 
         self.navigationItem.leftBarButtonItem = cancelButton;
         self.navigationItem.leftBarButtonItem.enabled = YES;
@@ -393,10 +392,10 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         self.navigationItem.leftBarButtonItem.style = UIBarButtonItemStyleBordered;
     }
 
-    UIBarButtonItem *editButton = [[[UIBarButtonItem alloc]
+    UIBarButtonItem *editButton = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemEdit
                                  target:self
-                                 action:@selector(editButtonPressed:)] autorelease];
+                                 action:@selector(editButtonPressed:)];
 
     self.navigationItem.rightBarButtonItem = editButton;
     self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -437,7 +436,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         self.weAreStillWaitingOnSocialProviders = YES;
 
         myLoadingLabel.font = [UIFont systemFontOfSize:18.0];
-        myLoadingLabel.text = NSLocalizedString(@"Loading providers. Please wait...", @"");
+        myLoadingLabel.text = NSLocalizedString(@"Loading providers. Please wait...", nil);
 
         /* Since the method showViewIsLoading will disable the "Cancel" button, re-enable it for this case */
         [self showViewIsLoading:YES];
@@ -465,12 +464,12 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     {
         if ([self.customInterface objectForKey:kJRSocialSharingTitleString])
             self.navigationItem.title =
-                NSLocalizedString([self.customInterface objectForKey:kJRSocialSharingTitleString], @"");
+                NSLocalizedString([self.customInterface objectForKey:kJRSocialSharingTitleString], nil);
         else if (selectedProvider)
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Share on", @""),
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Share on", nil),
                                                                              selectedProvider.friendlyName];
         else
-            self.navigationItem.title = NSLocalizedString(@"Share", @"");
+            self.navigationItem.title = NSLocalizedString(@"Share", nil);
     }
 }
 
@@ -513,7 +512,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 
         /* Set the loading label font/text back to default "Sharing..." */
         myLoadingLabel.font = [UIFont systemFontOfSize:24.0];
-        myLoadingLabel.text = NSLocalizedString(@"Sharing...", @"");
+        myLoadingLabel.text = NSLocalizedString(@"Sharing...", nil);
 
         [self addProvidersToTabBar];
 
@@ -527,12 +526,13 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 
         [self showViewIsLoading:NO];
 
-        NSString *message = @"There are no available providers. Either there is a problem connecting or no providers "
-                "have been configured. Please try again later.";
-        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"No Available Providers" message:message
+        NSString *message = NSLocalizedString(@"There are no available providers. Either there is a problem connecting or no providers "
+                "have been configured. Please try again later.",nil);
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Available Providers" message:message
                                                         delegate:self
-                                               cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil] autorelease];
+                                               cancelButtonTitle:
+                                               NSLocalizedString(@"OK",nil)
+                                               otherButtonTitles:nil];
 
         [alert show];
         return;
@@ -581,7 +581,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     if (loggedIn)
         [myPreviewOfTheUserCommentLabel setUsername:[self uiName]];
     else
-        [myPreviewOfTheUserCommentLabel setUsername:@"You"];
+        [myPreviewOfTheUserCommentLabel setUsername:NSLocalizedString(@"You",nil)];
 
     [UIView beginAnimations:@"buttonSlide" context:nil];
     [myJustShareButton setHidden:!loggedIn];
@@ -617,17 +617,18 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         UIBarButtonItem *barButton;
         if (shared)
         {
-            barButton = [[[UIBarButtonItem alloc] initWithTitle:@"Close"
+            SEL triggerPublishingDidComplete = sel_registerName("triggerPublishingDidComplete:");
+            barButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Close",nil)
                                                           style:UIBarButtonItemStyleDone
                                                          target:self.sessionData
-                                                         action:@selector(triggerPublishingDidComplete:)] autorelease];
+                                                         action:triggerPublishingDidComplete];
         }
         else
         {
             SEL cancelSel = @selector(triggerPublishingDidCancel:);
-            barButton = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+            barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                                        target:self.sessionData
-                                                                       action:cancelSel] autorelease];
+                                                                       action:cancelSel];
             self.navigationItem.leftBarButtonItem.style = UIBarButtonItemStyleBordered;
         }
 
@@ -639,11 +640,11 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 - (void)updatePreviewTextWhenContentReplacesAction
 {
     DLog(@"");
-    NSString *username = (self.loggedInUser) ? [self uiName] : @"You";
+    NSString *username = (self.loggedInUser) ? [self uiName] : NSLocalizedString(@"You",nil);
 
     NSString *url = (self.shortenedActivityUrl) ?
             self.shortenedActivityUrl :
-            @"shortening url...";
+            NSLocalizedString(@"shortening url...",nil);
 
     NSString *text = (![[myUserCommentTextView text] isEqualToString:@""]) ?
             [myUserCommentTextView text] :
@@ -668,7 +669,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 - (void)updatePreviewTextWhenContentDoesNotReplaceAction
 {
     DLog(@"");
-    NSString *username = (self.loggedInUser) ? [self uiName] : @"You";
+    NSString *username = (self.loggedInUser) ? [self uiName] : NSLocalizedString(@"You",nil);
     NSString *text = self.currentActivity.action;
 
     [myPreviewOfTheUserCommentLabel setUsername:username];
@@ -699,14 +700,14 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         if ([selectedProvider isActivityUrlPartOfUserContent] && self.shortenedActivityUrl == nil)
         {
             /* Twitter, MySpace */
-            characterCountText = @"Calculating remaining characters";
+            characterCountText = NSLocalizedString(@"Calculating remaining characters", nil);
         }
         else
         {
             int preview_length = [[myPreviewOfTheUserCommentLabel text] length];
             chars_remaining = self.maxCharacters - preview_length;
 
-            characterCountText = [NSString stringWithFormat:@"Remaining characters: %d",
+            characterCountText = [NSString stringWithFormat:NSLocalizedString(@"Remaining characters: %d", nil),
                                                             chars_remaining]; // TODO: Make just character number red
         }
     }
@@ -833,11 +834,12 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
                 [self sendSMS];
                 break;
             case JR_EMAIL_AND_SMS:
-                action = [[[UIActionSheet alloc] initWithTitle:@"Share with Email or SMS"
-                                                      delegate:self
-                                             cancelButtonTitle:@"Cancel"
-                                        destructiveButtonTitle:nil
-                                             otherButtonTitles:@"Email", @"SMS", nil] autorelease];
+                action = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Share with Email or SMS", nil)
+                                                     delegate:self
+                                            cancelButtonTitle:NSLocalizedString(@"Cancel", nil)
+                                       destructiveButtonTitle:nil
+                                            otherButtonTitles:NSLocalizedString(@"Email", nil),
+                                       NSLocalizedString(@"SMS", nil), nil];
                 action.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
                 [action showFromTabBar:myTabBar];
                 break;
@@ -885,7 +887,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         if (![self.customInterface objectForKey:kJRSocialSharingTitleString] &&
                 ![self.customInterface objectForKey:kJRSocialSharingTitleView])
         {
-            NSString *newText = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Share on", @""),
+            NSString *newText = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Share on", nil),
                                                                      selectedProvider.friendlyName];
             if (self.titleView) {
                  ((UILabel *) self.titleView).text = newText;
@@ -1027,10 +1029,10 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         [UIView commitAnimations];
     }
 
-    UIBarButtonItem *doneButton = [[[UIBarButtonItem alloc]
+    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                  target:self
-                                 action:@selector(doneButtonPressed:)] autorelease];
+                                 action:@selector(doneButtonPressed:)];
 
     self.navigationItem.rightBarButtonItem = doneButton;
     self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -1109,10 +1111,10 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 
     [myPreviewContainerRoundedRect setNeedsDisplay];
 
-    UIBarButtonItem *editButton = [[[UIBarButtonItem alloc]
+    UIBarButtonItem *editButton = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemEdit
                                  target:self
-                                 action:@selector(editButtonPressed:)] autorelease];
+                                 action:@selector(editButtonPressed:)];
 
     self.navigationItem.rightBarButtonItem = editButton;
     self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -1140,7 +1142,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 - (void)sendEmail
 {
 #if JRENGAGE_INCLUDE_EMAIL_SMS
-    MFMailComposeViewController *email = [[[MFMailComposeViewController alloc] init] autorelease];
+    MFMailComposeViewController *email = [[MFMailComposeViewController alloc] init];
 
     if (!email)
         return;
@@ -1157,7 +1159,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 - (void)sendSMS
 {
 #if JRENGAGE_INCLUDE_EMAIL_SMS
-    MFMessageComposeViewController *sms = [[[MFMessageComposeViewController alloc] init] autorelease];
+    MFMessageComposeViewController *sms = [[MFMessageComposeViewController alloc] init];
 
     if (!sms)
         return;
@@ -1188,14 +1190,14 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     self.userIsAttemptingToSignOut = YES;
 
     NSObject *nameString = ([self uiName]) ? [NSString stringWithFormat:@" as %@", [self uiName]] : @"";
-    NSString *title = [NSString stringWithFormat:@"You are currently signed in to %@%@. Would you like to sign out?",
+    NSString *title = [NSString stringWithFormat:NSLocalizedString(@"You are currently signed in to %@%@. Would you like to sign out?", nil),
                                                  selectedProvider.friendlyName,
                                                  nameString];
-    UIActionSheet *action = [[[UIActionSheet alloc] initWithTitle:title
+    UIActionSheet *action = [[UIActionSheet alloc] initWithTitle:title
                                                          delegate:self
-                                                cancelButtonTitle:@"Cancel"
-                                           destructiveButtonTitle:@"Sign Out"
-                                                otherButtonTitles:nil] autorelease];
+                                                cancelButtonTitle:NSLocalizedString(@"Cancel",nil)
+                                           destructiveButtonTitle:NSLocalizedString(@"Sign Out",nil)
+                                                otherButtonTitles:nil];
     action.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
     [action showFromTabBar:myTabBar];
 }
@@ -1275,12 +1277,10 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 
     NSURL *url = [NSURL URLWithString:profilePicUrl];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    NSString *tag = [[providerName copy] autorelease];
+    NSString *tag = [providerName copy];
 
     if (![JRConnectionManager createConnectionFromRequest:request forDelegate:self returnFullResponse:YES withTag:tag])
         [self setProfilePicToDefaultPic];
-
-    [request release];
 }
 
 - (void)downloadMediaThumbnailsForActivity
@@ -1293,7 +1293,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
                    toLoading:YES];
 
         NSURL *url = [NSURL URLWithString:((JRImageMediaObject *) media).src];
-        NSURLRequest *request = [[[NSURLRequest alloc] initWithURL:url] autorelease];
+        NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
         NSString *tag = @"getThumbnail";
 
         if (![JRConnectionManager createConnectionFromRequest:request forDelegate:self returnFullResponse:YES
@@ -1308,7 +1308,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
                    toLoading:YES];
 
         NSURL *url = [NSURL URLWithString:((JRFlashMediaObject *) media).imgsrc];
-        NSURLRequest *request = [[[NSURLRequest alloc] initWithURL:url] autorelease];
+        NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
         NSString *tag = @"getThumbnail";
 
         if (![JRConnectionManager createConnectionFromRequest:request forDelegate:self returnFullResponse:YES
@@ -1581,9 +1581,9 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
             break;
 
         NSString *imagePath = [NSString stringWithFormat:@"icon_bw_%@_30x30.png", provider.name];
-        UITabBarItem *providerTab = [[[UITabBarItem alloc] initWithTitle:provider.friendlyName
+        UITabBarItem *providerTab = [[UITabBarItem alloc] initWithTitle:provider.friendlyName
                                                                    image:[UIImage imageNamed:imagePath]
-                                                                     tag:[providerTabArr count]] autorelease];
+                                                                     tag:[providerTabArr count]];
 
         [providerTabArr insertObject:providerTab atIndex:[providerTabArr count]];
 
@@ -1594,13 +1594,19 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     if (weShouldAddTabForEmailAndOrSms)
     {
 
-        NSString *simpleStrArray[6] = {@"Email", @"Sms", @"Email/SMS", @"mail", @"sms", @"mail_sms"};
+        NSString *simpleStrArray[6] = {
+                NSLocalizedString(@"Email", nil),
+                NSLocalizedString(@"Sms", nil),
+                NSLocalizedString(@"Email/SMS", nil),
+                NSLocalizedString(@"mail", nil),
+                NSLocalizedString(@"sms", nil),
+                NSLocalizedString(@"mail_sms", nil)};
 
         NSString *fileName = [NSString stringWithFormat:@"icon_bw_%@_30x30.png",
                                                         simpleStrArray[self.emailAndOrSmsIndex + 2]];
-        UITabBarItem *emailTab = [[[UITabBarItem alloc] initWithTitle:simpleStrArray[self.emailAndOrSmsIndex - 1]
+        UITabBarItem *emailTab = [[UITabBarItem alloc] initWithTitle:simpleStrArray[self.emailAndOrSmsIndex - 1]
                                                                 image:[UIImage imageNamed:fileName]
-                                                                  tag:[providerTabArr count]] autorelease];
+                                                                  tag:[providerTabArr count]];
 
         [providerTabArr insertObject:emailTab atIndex:[providerTabArr count]];
     }
@@ -1614,8 +1620,6 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
         [self tabBar:myTabBar didSelectItem:[providerTabArr objectAtIndex:indexOfLastUsedProvider]];
         self.selectedTab = indexOfLastUsedProvider;
     }
-
-    [providerTabArr release];
 }
 
 - (void)shareActivity
@@ -1765,7 +1769,7 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 {
     DLog(@"");
 
-    myLoadingLabel.text = @"Sharing...";
+    myLoadingLabel.text = NSLocalizedString(@"Sharing...",nil);
 
     self.loggedInUser = [self.sessionData authenticatedUserForProvider:selectedProvider];
 
@@ -1780,11 +1784,11 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     }
     else
     {
-        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Shared"
-                                                         message:@"There was an error while sharing this activity."
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shared",nil)
+                                                         message:NSLocalizedString(@"There was an error while sharing this activity.",nil)
                                                         delegate:nil
-                                               cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil] autorelease];
+                                               cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                               otherButtonTitles:nil];
         [alert show];
         [self showViewIsLoading:NO];
         self.weAreCurrentlyPostingSomething = NO;
@@ -1796,12 +1800,12 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 {
     DLog(@"");
 
-    NSString *message = [NSString stringWithFormat:@"You have successfully shared this activity."];
-    UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Shared"
-                                                     message:message
-                                                    delegate:nil
-                                           cancelButtonTitle:@"OK"
-                                           otherButtonTitles:nil] autorelease];
+    NSString *message = [NSString stringWithFormat:NSLocalizedString(@"You have successfully shared this activity.",nil)];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shared",nil)
+                                                    message:message
+                                                   delegate:nil
+                                          cancelButtonTitle:NSLocalizedString(@"OK",nil)
+                                          otherButtonTitles:nil];
     [alert show];
 
     [self.alreadyShared addObject:provider];
@@ -1836,34 +1840,33 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     {
         case JRPublishFailedError:
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity."];
+                    NSLocalizedString(@"There was an error while sharing this activity.", nil)];
             break;
         case JRPublishErrorDuplicateTwitter:
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity: Twitter does not allow "
-                                                     "duplicate status updates."];
+                    NSLocalizedString(@"There was an error while sharing this activity: Twitter does not allow duplicate status updates.", nil)];
             break;
         case JRPublishErrorCharacterLimitExceeded: /* ... was "JRPublishErrorLinkedInCharacterExceeded" */
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity: Status was too long."];
+                    NSLocalizedString(@"There was an error while sharing this activity: Status was too long.", nil)];
             break;
         case JRPublishErrorMissingApiKey:
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity."];
+                    NSLocalizedString(@"There was an error while sharing this activity.", nil)];
             reauthenticate = YES;
             break;
         case JRPublishErrorInvalidFacebookSession:  /* ... was "JRPublishErrorInvalidOauthKey" */
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity."];
+                    NSLocalizedString(@"There was an error while sharing this activity.", nil)];
             reauthenticate = YES;
             break;
         case JRPublishErrorMissingParameter:
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity."];
+                    NSLocalizedString(@"There was an error while sharing this activity.", nil)];
             break;
         default:
             errorMessage = [NSString stringWithFormat:
-                                             @"There was an error while sharing this activity."];
+                    NSLocalizedString(@"There was an error while sharing this activity.", nil)];
             break;
     }
 
@@ -1885,11 +1888,11 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     self.weAreCurrentlyPostingSomething = NO;
     self.weHaveJustAuthenticated = NO;
 
-    UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Error"
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil)
                                                      message:errorMessage
                                                     delegate:nil
-                                           cancelButtonTitle:@"OK"
-                                           otherButtonTitles:nil] autorelease];
+                                           cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                           otherButtonTitles:nil];
     [alert show];
 }
 
@@ -1901,19 +1904,19 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     {
         case MFMailComposeResultSent:
             [self.sessionData triggerEmailSharingDidComplete];
-            alert = [[[UIAlertView alloc] initWithTitle:@"Success"
-                                                message:@"You have successfully sent this email."
+            alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Success", nil)
+                                                message:NSLocalizedString(@"You have successfully sent this email.", nil)
                                                delegate:nil
-                                      cancelButtonTitle:@"OK"
-                                      otherButtonTitles:nil] autorelease];
+                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                      otherButtonTitles:nil];
             [alert show];
             break;
         case MFMailComposeResultFailed:
-            alert = [[[UIAlertView alloc] initWithTitle:@"Error"
-                                                message:@"Could not send email.  Please try again later."
+            alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil)
+                                                message:NSLocalizedString(@"Could not send email.  Please try again later.", nil)
                                                delegate:nil
-                                      cancelButtonTitle:@"OK"
-                                      otherButtonTitles:nil] autorelease];
+                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                      otherButtonTitles:nil];
             [alert show];
             break;
         default:
@@ -1934,19 +1937,19 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
     {
         case MessageComposeResultSent:
             [self.sessionData triggerSmsSharingDidComplete];
-            alert = [[[UIAlertView alloc] initWithTitle:@"Success"
-                                                message:@"You have successfully sent this text."
+            alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Success", nil)
+                                                message:NSLocalizedString(@"You have successfully sent this text.", nil)
                                                delegate:nil
-                                      cancelButtonTitle:@"OK"
-                                      otherButtonTitles:nil] autorelease];
+                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                      otherButtonTitles:nil];
             [alert show];
             break;
         case MessageComposeResultFailed:
-            alert = [[[UIAlertView alloc] initWithTitle:@"Error"
-                                                message:@"Could not send text.  Please try again later."
+            alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil)
+                                                message:NSLocalizedString(@"Could not send text.  Please try again later.", nil)
                                                delegate:nil
-                                      cancelButtonTitle:@"OK"
-                                      otherButtonTitles:nil] autorelease];
+                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                      otherButtonTitles:nil];
             [alert show];
             break;
         default:
@@ -2019,50 +2022,11 @@ myUserName, mySignOutButton, mySharedCheckMark, mySharedLabel;
 {
     DLog(@"");
 
-    [selectedProvider release];
     self.loggedInUser = nil;
     self.currentActivity = nil;
     self.customInterface = nil;
-    [myBackgroundView release];
-    [myTabBar release];
-    [myLoadingLabel release];
-    [myLoadingActivitySpinner release];
-    [myLoadingGrayView release];
-    [myPadGrayEditingViewTop release];
-    [myPadGrayEditingViewMiddle release];
-    [myPadGrayEditingViewBottom release];
-    [myContentView release];
-    [myScrollView release];
-    [myRemainingCharactersLabel release];
-    [myPreviewContainerRoundedRect release];
-    [myPreviewOfTheUserCommentLabel release];
-    [myUserCommentTextView release];
-    [myUserCommentBoundingBox release];
-    [myProviderIcon release];
-    [myInfoButton release];
-    [myPoweredByLabel release];
-    [myEntirePreviewContainer release];
-    [myRichDataContainer release];
-    [myMediaThumbnailView release];
-    [myMediaThumbnailActivityIndicator release];
-    [myTitleLabel release];
-    [myDescriptionLabel release];
-    [myShareToView release];
-    [myTriangleIcon release];
-    [myProfilePic release];
-    [myProfilePicActivityIndicator release];
-    [myUserName release];
-    [myConnectAndShareButton release];
-    [myJustShareButton release];
-    [mySharedCheckMark release];
-    [mySharedLabel release];
-    [mySignOutButton release];
     self.cachedProfilePics = nil;
     self.alreadyShared = nil;
     self.titleView = nil;
-
-    [_timer release];
-    [_shortenedActivityUrl release];
-    [super dealloc];
 }
 @end

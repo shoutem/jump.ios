@@ -40,6 +40,7 @@
 #import "JRUserInterfaceMaestro.h"
 #import "JRCaptureData.h"
 #import "JRCapture.h"
+#import "JRCaptureFlow.h"
 
 typedef enum
 {
@@ -53,10 +54,10 @@ typedef enum
 @end
 
 @interface JRTraditionalSignInViewController () <JRCaptureInternalDelegate, UIAlertViewDelegate,  JRCaptureDelegate>
-@property (retain) NSString *titleString;
-@property (retain) UIView   *titleView;
+@property  NSString *titleString;
+@property  UIView   *titleView;
 @property JRTraditionalSignInType signInType;
-@property (retain) JREngageWrapper *wrapper;
+@property  JREngageWrapper *wrapper;
 @end
 
 @implementation JRTraditionalSignInViewController
@@ -74,9 +75,9 @@ typedef enum
     if ((self = [super init]))
     {
         signInType = theSignInType;
-        titleString = [theTitleString retain];
-        titleView = [theTitleView retain];
-        wrapper = [theWrapper retain];
+        titleString = theTitleString;
+        titleView = theTitleView;
+        wrapper = theWrapper;
     }
 
     return self;
@@ -85,10 +86,10 @@ typedef enum
 + (id)traditionalSignInViewController:(JRTraditionalSignInType)theSignInType titleString:(NSString *)theTitleString
                             titleView:(UIView *)theTitleView engageWrapper:(JREngageWrapper *)theWrapper
 {
-    return [[[JRTraditionalSignInViewController alloc]
+    return [[JRTraditionalSignInViewController alloc]
             initWithTraditionalSignInType:theSignInType
                               titleString:theTitleString
-                                titleView:theTitleView engageWrapper:theWrapper] autorelease];
+                                titleView:theTitleView engageWrapper:theWrapper];
 }
 
 - (void)loadView
@@ -103,7 +104,7 @@ typedef enum
     [button setBackgroundImage:[UIImage imageNamed:@"button_janrain_280x40.png"]
                       forState:UIControlStateNormal];
 
-    [button setTitle:@"Sign In" forState:UIControlStateNormal];
+    [button setTitle:NSLocalizedString(@"Sign In", nil) forState:UIControlStateNormal];
     [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [button setTitleShadowColor:[UIColor grayColor] forState:UIControlStateNormal];
 
@@ -113,7 +114,7 @@ typedef enum
                action:@selector(signInButtonTouchUpInside:)
      forControlEvents:UIControlEventTouchUpInside];
 
-    UIView *footerView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)] autorelease];
+    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
     [footerView addSubview:button];
 
     myTableView.tableFooterView = footerView;
@@ -185,9 +186,9 @@ typedef enum
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId];
     if (cell == nil)
     {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellId] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellId];
 
-        textField = [[[UITextField alloc] initWithFrame:CGRectMake(10, 7, 280, 26)] autorelease];
+        textField = [[UITextField alloc] initWithFrame:CGRectMake(10, 7, 280, 26)];
 
         textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         textField.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -201,15 +202,15 @@ typedef enum
         if (indexPath.row == 0)
         {
             NSString *const placedHolder = self.signInType == JRTraditionalSignInEmailPassword ?
-                    @"Enter your email" :
-                    @"Enter your username";
+                    NSLocalizedString(@"Enter your email", nil) :
+                    NSLocalizedString(@"Enter your username", nil);
             textField.placeholder = placedHolder;
             textField.delegate = self;
             textField.tag = NAME_TEXTFIELD_TAG;
         }
         else
         {
-            textField.placeholder = @"Enter your password";
+            textField.placeholder = NSLocalizedString(@"Enter your password", nil);
             textField.secureTextEntry = YES;
 
             textField.delegate = self;
@@ -248,8 +249,9 @@ typedef enum
     if (!user) user = @"";
     if (!password) password = @"";
 
-    NSDictionary *credentials = [NSDictionary dictionaryWithObjectsAndKeys:user, @"user",
-                                                                           password, @"password", nil];
+    NSDictionary *credentials = [NSDictionary
+            dictionaryWithObjectsAndKeys:user,
+                    @"user", password, @"password", nil];
 
     [JRCaptureApidInterface signInCaptureUserWithCredentials:credentials forDelegate:self withContext:nil];
 
@@ -272,14 +274,16 @@ typedef enum
 - (void)signInCaptureUserDidFailWithResult:(NSError *)error context:(NSObject *)context
 {
     DLog(@"error: %@", [error description]);
-    NSString const *type = self.signInType == JRTraditionalSignInEmailPassword ? @"Email" : @"Username";
-    NSString *title = [NSString stringWithFormat:@"Incorrect %@ or Password", type];
+    NSString const *type = self.signInType == JRTraditionalSignInEmailPassword ?
+            NSLocalizedString(@"Email", nil) :
+            NSLocalizedString(@"Username", nil);
+    NSString *title = [NSString stringWithFormat:NSLocalizedString(@"Incorrect %@ or Password", nil), type];
     //NSString *const message = [result objectForKey:@"error"];
-    UIAlertView *alertView = [[[UIAlertView alloc] initWithTitle:title
-                                                         message:nil // MOB-73
-                                                        delegate:self
-                                               cancelButtonTitle:@"Dismiss"
-                                               otherButtonTitles:@"Forgot Password", nil] autorelease];
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title
+                                                        message:nil // MOB-73
+                                                       delegate:self
+                                              cancelButtonTitle:NSLocalizedString(@"Dismiss", nil)
+                                              otherButtonTitles:NSLocalizedString(@"Forgot Password", nil), nil];
     alertView.tag = JRIncorrectUserOrPasswordAlertViewTag;
     [alertView show];
 
@@ -290,10 +294,11 @@ typedef enum
 
 - (void)showForgottenPasswordAlert
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Confirm Your Email Address"
-                                                        message:@"We'll send you a link to create a new password."
-                                                       delegate:self cancelButtonTitle:@"Cancel"
-                                              otherButtonTitles:@"Send", nil];
+    UIAlertView *alertView = [[UIAlertView alloc]
+            initWithTitle:NSLocalizedString(@"Confirm Your Email Address", nil)
+                  message:NSLocalizedString(@"We'll send you a link to create a new password.", nil)
+                 delegate:self cancelButtonTitle:NSLocalizedString(@"Cancel", nil)
+        otherButtonTitles:NSLocalizedString(@"Send", nil), nil];
     alertView.alertViewStyle = UIAlertViewStylePlainTextInput;
     alertView.tag = JRForgotPasswordAlertViewTag;
 
@@ -307,13 +312,17 @@ typedef enum
         NSString *fieldName = [data getForgottenPasswordFieldName];
         NSDictionary *field = [[data.captureFlow objectForKey:@"fields"] objectForKey:fieldName];
         NSString *placeholder = [field objectForKey:@"placeholder"];
-        if (!placeholder) placeholder =  self.signInType == JRTraditionalSignInEmailPassword ? @"email" : @"username";
+        if (!placeholder)
+        {
+            placeholder = (self.signInType == JRTraditionalSignInEmailPassword) ?
+                    NSLocalizedString(@"Enter your email", nil) :
+                    NSLocalizedString(@"Enter your username", nil);
+        }
 
-        [alertView textFieldAtIndex:0].placeholder = [NSString stringWithFormat:@"Enter your %@", placeholder];
+        [alertView textFieldAtIndex:0].placeholder = placeholder;
     }
 
     [alertView show];
-    [alertView autorelease];
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
@@ -322,28 +331,52 @@ typedef enum
     } else if (alertView.tag == JRForgotPasswordAlertViewTag && buttonIndex == 1) {
         [delegate showLoading];
         [JRCapture startForgottenPasswordRecoveryForField:[alertView textFieldAtIndex:0].text
-                                               recoverUri:nil delegate:self];
+                                                 delegate:self];
     }
 }
 
 - (void)forgottenPasswordRecoveryDidSucceed
 {
     [delegate hideLoading];
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Reset Password email Sent" message:@"" delegate:nil
-                                              cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+    UIAlertView *alertView = [[UIAlertView alloc]
+            initWithTitle:NSLocalizedString(@"Reset Password email Sent", nil)
+                  message:@""
+                 delegate:nil
+        cancelButtonTitle:NSLocalizedString(@"Dismiss", nil)
+        otherButtonTitles:nil];
     [alertView show];
-    [alertView autorelease];
 }
 
 - (void)forgottenPasswordRecoveryDidFailWithError:(NSError *)error
 {
     [delegate hideLoading];
-    NSString *errorMessage = [error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey];
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Could Not Reset Password"
+    NSString *errorMessage;
+
+    NSDictionary *msg = [error.userInfo objectForKey:@"invalid_fields"];
+    if (msg)
+    {
+        // The form name comes from config data, which is store by JRCaptureData
+        NSString *formName = [[JRCaptureData sharedCaptureData] captureForgottenPasswordFormName];
+        if (formName)
+        {
+            NSArray *form = [msg objectForKey:formName];
+            if (form && form.count)
+            {
+                // use the first invalid field.
+                errorMessage = form[0];
+            }
+        }
+    }
+    if (!errorMessage)
+    {
+        errorMessage = [error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey];
+    }
+
+    // read the localized error string from JRCaptureError.
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Could Not Reset Password", nil)
                                                         message:errorMessage delegate:nil
-                                              cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+                                              cancelButtonTitle:NSLocalizedString(@"Dismiss", nil) otherButtonTitles:nil];
     [alertView show];
-    [alertView autorelease];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
@@ -362,14 +395,6 @@ typedef enum
 
 - (void)dealloc
 {
-    [myTableView release];
-    [delegate release];
-    [titleView release];
-    [titleString release];
-    [firstResponder release];
-
-    [wrapper release];
-    [super dealloc];
 }
 @end
 

@@ -36,6 +36,8 @@
 
 + (void)configureEngageWithAppId:(NSString *)appId customIdentityProviders:(NSDictionary *)customProviders;
 
++ (void)reconfigureEngageWithNewAppId:(NSString *)appId;
+
 + (void)startAuthenticationDialogWithTraditionalSignIn:(JRTraditionalSignInType)nativeSignInType
                            andCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
                                            forDelegate:(id <JRCaptureDelegate>)delegate;
@@ -46,4 +48,15 @@
                                 forDelegate:(id <JRCaptureDelegate>)delegate;
 
 + (id)getDelegate;
++ (void)startAuthenticationDialogWithTraditionalSignIn:(JRTraditionalSignInType)nativeSignInType
+                           andCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                           forDelegate:(id <JRCaptureDelegate>)delegate
+                                     forAccountLinking:(BOOL)linkAccount
+                                       withRedirectUri:(NSString *)redirectUri;
+
++ (void)performCommonAuthenticationForTraditionalSignIn:(JRTraditionalSignInType)nativeSignInType
+                            andCustomInterfaceOverrides:(NSDictionary *)customInterfaceOverrides
+                                            forDelegate:(id <JRCaptureDelegate>)delegate
+                                        withRedirectUri:(NSString *)redirectUri
+                                      forAccountLinking:(BOOL)linkAccount;
 @end

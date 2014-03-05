@@ -123,7 +123,7 @@ object that manages your application's state model.
 
 3. Add a `JRCaptureUser *` property to your class's interface declaration:
 
-        @property (retain, nonatomic) JRCaptureUser *captureUser;
+        @property (nonatomic) JRCaptureUser *captureUser;
 
 4. In your class's implementation synthesize that property:
 
@@ -156,7 +156,7 @@ Copy and paste this block into `-[AppDelegate application:didFinishLaunchingWith
         config.captureSocialRegistrationFormName = @"socialRegistrationForm"; // e.g.
         config.captureAppId = @"your_capture_app_id";
         config.forgottenPasswordFormName = @"forgotPasswordForm"; // e.g.
-        config.passwordRecoverUri = @"your_password_recovery_uri";
+        config.editProfileFormName = @"editProfileForm";
 
         [JRCapture setCaptureConfig:config];
     }
@@ -389,6 +389,72 @@ This example checks for the merge-flow error, it prompts the user to merge, and 
 a conflict with an existing record created with traditional sign-in. This case is handled in the `handleTradMerge:`
 method.
 
+### Performing Account Linking Flow
+
+There are times when a user want to link another social identity provider to the existing capture account. This flow enables
+user to link other social identity provider accounts to the current capture account. 
+
+- `+[JRCapture startAccountLinkingSignInDialogForDelegate:forAccountLinking:withRedirectUri:]` : Starts the 
+   social sign-in process for all currently configured social sign-in providers, displaying a list of them initially,
+   and guiding the user through the authentication. Once the authentication is completed, this new account is linked to the 
+   existing capture account.
+   
+Parameters :
+- `JRCaptureDelegate` : A capture delegate object.
+- `forAccountLinking` : A `bool` value to indicate whether to perform account linking or not. Set it `"YES` to start account linking.
+- `withRedirectUri`	  : A url which will be used if & only if the flow is set up to trigger an email after linking accounts successfully.
+During the capture account setup process, email triggering can be configured.
+
+Delegates:
+- `-(void)linkNewAccountDidFailWithError:(NSError *)error` : The delegate is fired with an error when the account linking fails.
+
+- `-(void)linkNewAccountDidSucceed` : The delegate is fired after the Successful account linking process.
+
+Example:
+Let's call this on the click of a button for Account Linking.
+
+    [JRCapture startAccountLinkingSignInDialogForDelegate:self.captureDelegate 
+                                        forAccountLinking:YES
+                                          withRedirectUri:@"http://your-domain-custom-redirect-url-page.html"]
+
+**Note** This should be called when the user has already signed-in into capture application.
+
+### Performing Account Unlink Flow
+
+A user can have multiple accounts linked to the same capture account. To unlink an account associated with an existing capture account,
+use this flow. This flow will unlink one account at a time, in a successful execution.
+
+**Note** This should be called when the user has already signed-in into capture application.
+
+-`[JRCaptureData getLinkedProfiles]` : Use this method to fetch the list of linked accounts after the successful sign-in. The linked profile
+   array consists of dictionary of linked profiles. This is stored in the `JRCaptureData` object. Each dictionary object has
+   the following keys:
+   `verifiedEmail`  & `identifier` : Use `identifier` value for unlinking account.
+
+- `+[JRcapture startAccountUnlinking:(id<JRCaptureDelegate>)delegate forProfileIdentifier:(NSString *)identifier`: This will
+   unlink the account identified by the `identifier`, from the existing capture account. Pass any `identifier` value being retrieved from 
+   `[JRCaptureData getLinkedProfiles]` array. The `JRCapture` will trigger `accountUnlinkingDidFailWithError` &
+   `accountUnlinkingDidSucceed` delegates.
+
+Delegates:
+- `-(void)accountUnlinkingDidFailWithError:(NSError *)error` : This delegate is fired when the account unlinking process fails.
+
+- `-(void)accountUnlinkingDidSucceed` : This delegate is fired after a successful account unlinking flow.
+
+Example:
+Let's call this on the click of a button for Account Un-linking.
+**Note** This should be called when the user has already signed-in into a capture application.
+    
+    // store the Linked accounts into your array aobject from JRCaptureData object.
+    NSArray *linkedProfiles = [JRCaptureData getLinkedProfiles];
+    
+    if([linkedProfiles count]) {
+    	NSString *selectedProfile = [[linkedProfiles objectAtIndex:0] valueForKey:@"identifier"];
+    	
+    	// pass the selected  identifier to the unlinking method.
+    	[JRCapture startAccountUnlinking:self.captureDelegate forProfileIdentifier:selectedProfile];
+    }
+
 ## Making Changes in a Capture User Record
 
 ### Capture Schema Basics
@@ -418,6 +484,20 @@ speaking, parts of the record that are limited to objects can be updated, but to
 you must replace the plural. For example, `JRName` (the user's name) is an object and can be updated if the user changes
 part of their name, but `JRInterests` (a plural of strings holding the user's interests) must be replaced if the user
 adds or removes an interest.
+
+### Updating User Profiles
+
+Conform to the `JRCaptureDelegate` protocol in your class.
+
+    @interface MyCaptureEditProfileController : UIViewController <JRCaptureDelegate>
+
+Update the properties of your `JRCaptureUser` that correspond to the fields of your `editProfileForm` in your flow. For
+example: `givenName`, `familyName`, `birthdate`, `aboutMe`, etc.
+
+Call `+[JRCapture updateProfileForUser:delegate]` to update the users profile.
+
+Upon a successful update the delegate method `updateUserProfileDidSucceed` will be called. If the update fails for any
+reason `updateUserProfileDidFailWithError:` will be called instead.
 
 ### Updating Record Entities (Non-Plurals)
 
